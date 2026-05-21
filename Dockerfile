@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS base
+FROM golang:1.26-alpine AS base
 COPY . /application
 RUN apk update && apk add --no-cache git pkgconf gcc libc-dev
 WORKDIR /application
