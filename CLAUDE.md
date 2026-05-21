@@ -43,3 +43,11 @@ This service follows Clean Architecture with three layers:
 ## Error handling
 
 Return errors from handlers — do not write the response directly on error. The error handler chain in `infrahttp.ErrorHandler` matches and serializes them. To handle a new error type, implement `ErrorWriter` and register it in `error_handler_config.go`.
+
+## Testing conventions
+
+- **One test file per source file** — `foo.go` gets `foo_test.go`. Never group tests from multiple source files into one test file.
+- **External test package** — use `package foo_test`, not `package foo`.
+- **Table-driven tests** — use a slice of structs with named subtests via `t.Run()`.
+- **Assertions** — use `testify/assert` and `testify/require`.
+- **Mocks and helpers** — define them in the same test file that uses them, not in shared files.
