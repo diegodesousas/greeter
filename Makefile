@@ -58,7 +58,7 @@ db-up:
 		-e POSTGRES_USER=${DB_USER} \
 		-e POSTGRES_PASSWORD=${DB_PASSWORD} \
 		-e POSTGRES_DB=${DB_NAME} \
-		postgres:latest
+		postgres:18
 
 db-down:
 	@echo "Stopping greeter postgres"
