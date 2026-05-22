@@ -86,12 +86,12 @@ func bootstrapDatabase() (database.Connection, error) {
 	return conn, nil
 }
 
-func bootstrapRoutes() httpserver.Option {
+func bootstrapRoutes(repos database.Repositories) httpserver.Option {
     appClock := clock.New()
 
     var routeList []httpserver.Route
     routeList = append(routeList, routes.Health()...)
-    routeList = append(routeList, routes.Greeting(appClock)...)
+    routeList = append(routeList, routes.Greeting(appClock, repos.Greeting)...)
 
     return httpserver.WithRoutes(routeList...)
 }
@@ -113,11 +113,13 @@ func main() {
         log.FatalError(ctx, err)
     }
 
-    if _, err := bootstrapDatabase(); err != nil {
+    conn, err := bootstrapDatabase()
+    if err != nil {
         log.FatalError(ctx, err)
     }
 
-    server := bootstrapServer(bootstrapRoutes(), logger, statsdClient)
+    repos := database.NewRepositories(conn)
+    server := bootstrapServer(bootstrapRoutes(repos), logger, statsdClient)
 
     log.Info(ctx, "server starting...")
     shutdown := server.Run()
