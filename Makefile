@@ -1,8 +1,8 @@
 include .env
 
-NETWORK=pppay-network
+NETWORK=diegodesousas-network
 PWD=$(shell pwd)
-IMAGE_PREFIX=pppay/greeter
+IMAGE_PREFIX=diegodesousas/greeter
 
 DOCKER_DEV_FLAGS = \
 	--env-file ${PWD}/.env \
