@@ -66,7 +66,15 @@ db-down:
 	@echo "Postgres down"
 
 dev:
-	@go run ./cmd/http/main.go
+	@docker run \
+		--rm \
+		--name greeter-dev \
+		--network ${NETWORK} \
+		-p ${HTTP_PORT}:${HTTP_PORT} \
+		${DOCKER_DEV_FLAGS} \
+		-w /application \
+		golang:1.24 \
+		go run ./cmd/http/main.go
 
 run:
 	@docker run \
