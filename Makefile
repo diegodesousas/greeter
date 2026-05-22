@@ -23,7 +23,7 @@ build-image:
 build-dev:
 	@docker build \
 		-t ${IMAGE_PREFIX}-dev \
-		--target base \
+		--target dev \
 		.
 
 build-network:
@@ -72,8 +72,7 @@ dev:
 		--network ${NETWORK} \
 		-p ${HTTP_PORT}:${HTTP_PORT} \
 		${DOCKER_DEV_FLAGS} \
-		-w /application \
-		golang:1.26-alpine \
+		${IMAGE_PREFIX}-dev \
 		go run ./cmd/http/main.go
 
 run:
