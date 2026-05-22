@@ -2,51 +2,52 @@ package database_test
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
+	devkitsql "github.com/diegodesousas/go-devkit/pkg/database/sql"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
 	"github.com/diegodesousas/greeter/internal/infra/database"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func newTestConnection(t *testing.T) database.Connection {
-	t.Helper()
-
-	viper.Set("DB_HOST", "localhost")
-	viper.Set("DB_PORT", "5432")
-	viper.Set("DB_USER", "postgres")
-	viper.Set("DB_PASSWORD", "postgres")
-	viper.Set("DB_NAME", "greeter")
-	viper.Set("DB_SSL_MODE", "disable")
-	viper.Set("DB_MAX_OPEN_CONN", 10)
-	viper.Set("DB_MAX_IDLE_CONN", 5)
-	viper.Set("DB_CONN_MAX_IDLE_TIME", 30)
-	viper.Set("DB_CONN_MAX_LIFETIME", 60)
-
-	conn, err := database.NewPostgresConnection()
-	if err != nil {
-		t.Skip("database not available:", err)
-	}
-
-	if err := conn.Ping(); err != nil {
-		conn.Close()
-		t.Skip("database not reachable:", err)
-	}
-
-	t.Cleanup(func() {
-		conn.Close()
-	})
-
-	return conn
+type mockConnection struct {
+	execErr error
 }
+
+func (m *mockConnection) Exec(_ context.Context, _ string, _ ...interface{}) (sql.Result, error) {
+	return nil, m.execErr
+}
+
+func (m *mockConnection) Get(_ context.Context, _ interface{}, _ string, _ ...interface{}) error {
+	return nil
+}
+
+func (m *mockConnection) Select(_ context.Context, _ interface{}, _ string, _ ...interface{}) error {
+	return nil
+}
+
+func (m *mockConnection) Begin(_ context.Context) (devkitsql.Transaction, error) {
+	return nil, nil
+}
+
+func (m *mockConnection) TransactionContext(_ context.Context, _ func(context.Context) error) error {
+	return nil
+}
+
+func (m *mockConnection) Ping() error  { return nil }
+func (m *mockConnection) Close() error { return nil }
+
+var fixedTime = time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC)
 
 func TestGreetingRepository_Save(t *testing.T) {
 	tests := []struct {
 		name     string
 		greeting greeting.Greeting
+		execErr  error
 		wantErr  bool
 	}{
 		{
@@ -54,24 +55,24 @@ func TestGreetingRepository_Save(t *testing.T) {
 			greeting: greeting.Greeting{
 				Name:      "Diego",
 				Message:   "Hello, Diego!",
-				GreetedAt: time.Date(2026, 5, 22, 12, 0, 0, 0, time.UTC),
+				GreetedAt: fixedTime,
 			},
-			wantErr: false,
 		},
 		{
-			name: "saves greeting with long name",
+			name: "returns error when exec fails",
 			greeting: greeting.Greeting{
-				Name:      "Aaaaabbbbbcccccdddddeeeee",
-				Message:   "Hello, Aaaaabbbbbcccccdddddeeeee!",
-				GreetedAt: time.Date(2026, 5, 22, 15, 30, 0, 0, time.UTC),
+				Name:      "Diego",
+				Message:   "Hello, Diego!",
+				GreetedAt: fixedTime,
 			},
-			wantErr: false,
+			execErr: errors.New("db error"),
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			conn := newTestConnection(t)
+			conn := &mockConnection{execErr: tt.execErr}
 			repo := database.NewGreetingRepository(conn)
 
 			err := repo.Save(context.Background(), tt.greeting)
