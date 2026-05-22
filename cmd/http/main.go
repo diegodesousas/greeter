@@ -13,6 +13,7 @@ import (
     "github.com/diegodesousas/go-devkit/pkg/log"
     "github.com/diegodesousas/go-devkit/pkg/metrics"
     "github.com/diegodesousas/greeter/internal/infra/clock"
+    "github.com/diegodesousas/greeter/internal/infra/database"
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
     "github.com/diegodesousas/greeter/internal/infra/http/routes"
     "github.com/spf13/viper"
@@ -71,6 +72,19 @@ func bootstrapServer(routeOpt httpserver.Option, logger log.Logger, metricsClien
     )
 }
 
+func bootstrapDatabase(ctx context.Context) {
+    conn, err := database.NewPostgresConnection()
+    if err != nil {
+        log.Warn(ctx, "database connection failed: "+err.Error())
+        return
+    }
+
+    if err := conn.Ping(); err != nil {
+        log.Warn(ctx, "database ping failed: "+err.Error())
+        conn.Close()
+    }
+}
+
 func bootstrapRoutes() httpserver.Option {
     appClock := clock.New()
 
@@ -97,6 +111,8 @@ func main() {
     if err != nil {
         log.FatalError(ctx, err)
     }
+
+    bootstrapDatabase(ctx)
 
     server := bootstrapServer(bootstrapRoutes(), logger, statsdClient)
 
