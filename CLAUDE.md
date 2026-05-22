@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development workflow
+
+For every task, always follow this git workflow:
+
+1. Create a new branch from `main` with a descriptive name (`feature/`, `fix/`, `chore/` prefix).
+2. Implement the changes with one or more commits.
+3. Push the branch to the remote repository (`git push -u origin <branch>`).
+4. Open a pull request targeting `main` via `gh pr create`.
+
+Never commit directly to `main`.
+
 ## Commands
 
 ```bash
