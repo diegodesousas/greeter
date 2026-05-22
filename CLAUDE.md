@@ -15,14 +15,18 @@ Never commit directly to `main`.
 
 ## Commands
 
-```bash
-make run          # run locally (requires .env)
-make test         # run all tests
-go test ./internal/application/greet/...  # run a single package's tests
+All commands run inside Docker containers — never run Go tooling directly on the host.
 
-make build-init   # build Docker image + create network (first-time setup)
-make http-up      # start service via Docker
-make http-down    # stop Docker container
+```bash
+make dev          # run HTTP server for development (requires build-dev image)
+make run          # run HTTP server via the custom dev image
+make test         # run all tests inside a container
+
+make build-init   # build Docker images + create network (first-time setup)
+make http-up      # start production HTTP container
+make http-down    # stop HTTP container
+make db-up        # start local Postgres container
+make db-down      # stop local Postgres container
 ```
 
 Copy `.env.example` to `.env` before running. GitHub credentials are required to pull the private `go-devkit` module.
