@@ -27,11 +27,11 @@ build-dev:
 		.
 
 build-network:
-ifeq ($(shell docker network list --filter name=${NETWORK} | wc -l), 1)
+ifeq ($(shell docker network ls --format "{{.Name}}" | grep -c "^${NETWORK}$$"),0)
 	@echo "Creating network ${NETWORK}"
 	@docker network create --driver bridge ${NETWORK}
 else
-	@echo "Network ${NETWORK} created"
+	@echo "Network ${NETWORK} already exists"
 endif
 
 http-up:
