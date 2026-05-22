@@ -16,7 +16,8 @@ Never commit directly to `main`.
 ## Commands
 
 ```bash
-make run          # run locally (requires .env)
+make dev          # run locally without Docker (requires .env and local Go)
+make run          # run locally via Docker dev image (requires .env)
 make test         # run all tests
 go test ./internal/application/greet/...  # run a single package's tests
 

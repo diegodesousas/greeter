@@ -10,7 +10,7 @@ DOCKER_DEV_FLAGS = \
 	-v greeter-go-mod:/go/pkg/mod \
 	-v greeter-go-build-cache:/root/.cache/go-build
 
-.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run test build-and-run-http
+.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test build-and-run-http
 
 build-init: build-image build-dev build-network
 
@@ -64,6 +64,9 @@ db-down:
 	@echo "Stopping greeter postgres"
 	@docker stop greeter-postgres > /dev/null
 	@echo "Postgres down"
+
+dev:
+	@go run ./cmd/http/main.go
 
 run:
 	@docker run \
