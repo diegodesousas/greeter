@@ -3,6 +3,13 @@ include .env
 NETWORK=diegodesousas-network
 PWD=$(shell pwd)
 IMAGE_PREFIX=diegodesousas/greeter
+MIGRATE_IMAGE=migrate/migrate:v4.18.1
+MIGRATE_DB_URL=postgres://${DB_USER}:${DB_PASSWORD}@greeter-postgres:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE}
+MIGRATE_FLAGS=\
+	--rm \
+	--name greeter-migrate \
+	--network ${NETWORK} \
+	-v ${PWD}/migrations:/migrations
 
 DOCKER_DEV_FLAGS = \
 	--env-file ${PWD}/.env \
@@ -10,7 +17,7 @@ DOCKER_DEV_FLAGS = \
 	-v greeter-go-mod:/go/pkg/mod \
 	-v greeter-go-build-cache:/root/.cache/go-build
 
-.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test build-and-run-http
+.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test migrate-up migrate-down migrate-create build-and-run-http
 
 build-init: build-image build-dev build-network
 
@@ -91,5 +98,22 @@ test:
 		${DOCKER_DEV_FLAGS} \
 		${IMAGE_PREFIX}-dev \
 		go test ./...
+
+migrate-up:
+	@docker run ${MIGRATE_FLAGS} ${MIGRATE_IMAGE} \
+		-path=/migrations \
+		-database "${MIGRATE_DB_URL}" \
+		up
+
+migrate-down:
+	@docker run ${MIGRATE_FLAGS} ${MIGRATE_IMAGE} \
+		-path=/migrations \
+		-database "${MIGRATE_DB_URL}" \
+		down 1
+
+migrate-create:
+	@docker run ${MIGRATE_FLAGS} \
+		--entrypoint migrate ${MIGRATE_IMAGE} \
+		create -ext sql -dir /migrations -seq ${NAME}
 
 build-and-run-http: build-image http-up
