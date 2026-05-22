@@ -1,8 +1,8 @@
 include .env
 
-NETWORK=pppay-network
+NETWORK=diegodesousas-network
 PWD=$(shell pwd)
-IMAGE_PREFIX=pppay/greeter
+IMAGE_PREFIX=diegodesousas/greeter
 
 DOCKER_DEV_FLAGS = \
 	--env-file ${PWD}/.env \
@@ -27,11 +27,11 @@ build-dev:
 		.
 
 build-network:
-ifeq ($(shell docker network list --filter name=${NETWORK} | wc -l), 1)
+ifeq ($(shell docker network ls --format "{{.Name}}" | grep -c "^${NETWORK}$$"),0)
 	@echo "Creating network ${NETWORK}"
 	@docker network create --driver bridge ${NETWORK}
 else
-	@echo "Network ${NETWORK} created"
+	@echo "Network ${NETWORK} already exists"
 endif
 
 http-up:

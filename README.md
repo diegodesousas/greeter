@@ -2,7 +2,7 @@
 
 ## Responsibility
 
-Example service demonstrating the Clean Architecture structure used across pppay-com-br services. Exposes a single greeting endpoint.
+Example service demonstrating the Clean Architecture structure used across diegodesousas-com-br services. Exposes a single greeting endpoint.
 
 ## Features
 
