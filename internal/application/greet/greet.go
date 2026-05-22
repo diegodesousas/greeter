@@ -24,12 +24,14 @@ type UseCase interface {
 
 type greetUseCase struct {
     clock     clock.Clock
+    repo      greeting.Repository
     validator validator.Validator[DTO]
 }
 
-func NewUseCase(clock clock.Clock) UseCase {
+func NewUseCase(clock clock.Clock, repo greeting.Repository) UseCase {
     return greetUseCase{
         clock:     clock,
+        repo:      repo,
         validator: newGreetValidator(),
     }
 }
@@ -40,6 +42,10 @@ func (u greetUseCase) Run(ctx context.Context, dto DTO) (GreetingDTO, error) {
     }
 
     g := greeting.New(dto.Name, u.clock.Now())
+
+    if err := u.repo.Save(ctx, g); err != nil {
+        return GreetingDTO{}, err
+    }
 
     return GreetingDTO{
         Message:   g.Message,

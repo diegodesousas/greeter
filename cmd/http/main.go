@@ -12,6 +12,7 @@ import (
     "github.com/diegodesousas/go-devkit/pkg/httpserver"
     "github.com/diegodesousas/go-devkit/pkg/log"
     "github.com/diegodesousas/go-devkit/pkg/metrics"
+    "github.com/diegodesousas/greeter/internal/domain/greeting"
     "github.com/diegodesousas/greeter/internal/infra/clock"
     "github.com/diegodesousas/greeter/internal/infra/database"
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
@@ -86,12 +87,12 @@ func bootstrapDatabase() (database.Connection, error) {
 	return conn, nil
 }
 
-func bootstrapRoutes() httpserver.Option {
+func bootstrapRoutes(greetingRepo greeting.Repository) httpserver.Option {
     appClock := clock.New()
 
     var routeList []httpserver.Route
     routeList = append(routeList, routes.Health()...)
-    routeList = append(routeList, routes.Greeting(appClock)...)
+    routeList = append(routeList, routes.Greeting(appClock, greetingRepo)...)
 
     return httpserver.WithRoutes(routeList...)
 }
@@ -113,11 +114,13 @@ func main() {
         log.FatalError(ctx, err)
     }
 
-    if _, err := bootstrapDatabase(); err != nil {
+    conn, err := bootstrapDatabase()
+    if err != nil {
         log.FatalError(ctx, err)
     }
 
-    server := bootstrapServer(bootstrapRoutes(), logger, statsdClient)
+    greetingRepo := database.NewGreetingRepository(conn)
+    server := bootstrapServer(bootstrapRoutes(greetingRepo), logger, statsdClient)
 
     log.Info(ctx, "server starting...")
     shutdown := server.Run()
