@@ -7,7 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewPostgresConnection() (devkitsql.Connection, error) {
+type Connection = devkitsql.Connection
+
+func NewPostgresConnection() (Connection, error) {
 	cfg := devkitsql.Config{
 		Host:            viper.GetString("DB_HOST"),
 		Port:            viper.GetString("DB_PORT"),

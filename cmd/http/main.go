@@ -72,17 +72,18 @@ func bootstrapServer(routeOpt httpserver.Option, logger log.Logger, metricsClien
     )
 }
 
-func bootstrapDatabase(ctx context.Context) {
-    conn, err := database.NewPostgresConnection()
-    if err != nil {
-        log.Warn(ctx, "database connection failed: "+err.Error())
-        return
-    }
+func bootstrapDatabase() (database.Connection, error) {
+	conn, err := database.NewPostgresConnection()
+	if err != nil {
+		return nil, err
+	}
 
-    if err := conn.Ping(); err != nil {
-        log.Warn(ctx, "database ping failed: "+err.Error())
-        conn.Close()
-    }
+	if err := conn.Ping(); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	return conn, nil
 }
 
 func bootstrapRoutes() httpserver.Option {
@@ -112,7 +113,9 @@ func main() {
         log.FatalError(ctx, err)
     }
 
-    bootstrapDatabase(ctx)
+    if _, err := bootstrapDatabase(); err != nil {
+        log.FatalError(ctx, err)
+    }
 
     server := bootstrapServer(bootstrapRoutes(), logger, statsdClient)
 
