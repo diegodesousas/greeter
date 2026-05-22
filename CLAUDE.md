@@ -18,7 +18,7 @@ Never commit directly to `main`.
 All commands run inside Docker containers — never run Go tooling directly on the host.
 
 ```bash
-make dev          # run HTTP server for development (uses golang:1.24, no image build required)
+make dev          # run HTTP server for development (uses golang:1.26-alpine, no image build required)
 make run          # run HTTP server via the custom dev image
 make test         # run all tests inside a container
 

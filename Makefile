@@ -73,7 +73,7 @@ dev:
 		-p ${HTTP_PORT}:${HTTP_PORT} \
 		${DOCKER_DEV_FLAGS} \
 		-w /application \
-		golang:1.24 \
+		golang:1.26-alpine \
 		go run ./cmd/http/main.go
 
 run:
