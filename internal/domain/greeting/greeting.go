@@ -6,6 +6,7 @@ import (
 )
 
 type Greeting struct {
+	ID        string
 	Name      string
 	Message   string
 	GreetedAt time.Time
