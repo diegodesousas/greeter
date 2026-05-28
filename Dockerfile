@@ -1,5 +1,6 @@
 FROM golang:1.26-alpine AS base
 RUN apk update && apk add --no-cache git pkgconf gcc libc-dev
+RUN go install github.com/swaggo/swag/cmd/swag@v1.16.4
 WORKDIR /application
 COPY go.mod go.sum ./
 RUN go mod download

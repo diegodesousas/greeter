@@ -17,7 +17,7 @@ DOCKER_DEV_FLAGS = \
 	-v greeter-go-mod:/go/pkg/mod \
 	-v greeter-go-build-cache:/root/.cache/go-build
 
-.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test migrate-up migrate-down migrate-create build-and-run-http
+.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test migrate-up migrate-down migrate-create build-and-run-http docs
 
 build-init: build-image build-dev build-network
 
@@ -118,3 +118,10 @@ migrate-create:
 		create -ext sql -dir /migrations -seq ${NAME}
 
 build-and-run-http: build-image http-up
+
+docs:
+	@docker run \
+		--rm \
+		${DOCKER_DEV_FLAGS} \
+		${IMAGE_PREFIX}-dev \
+		swag init -g cmd/http/main.go -o docs --parseDependency --parseInternal

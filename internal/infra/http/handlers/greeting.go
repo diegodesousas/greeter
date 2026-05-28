@@ -10,6 +10,17 @@ import (
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
 )
 
+// Hello godoc
+//
+//	@Summary		Cumprimenta uma pessoa pelo nome
+//	@Description	Gera uma saudação para o nome informado e persiste o registro no histórico
+//	@Tags			greetings
+//	@Produce		json
+//	@Param			name	path		string	true	"Nome da pessoa (1-50 caracteres)"
+//	@Success		200		{object}	greet.GreetingDTO
+//	@Failure		422		{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro de validação"
+//	@Failure		500		{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro interno"
+//	@Router			/hello/{name} [get]
 func Hello(useCase greet.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
         dto := greet.DTO{
@@ -25,6 +36,18 @@ func Hello(useCase greet.UseCase) httpserver.Handler {
     }
 }
 
+// ListGreetings godoc
+//
+//	@Summary		Lista saudações paginadas
+//	@Description	Retorna a lista de saudações registradas, com paginação
+//	@Tags			greetings
+//	@Produce		json
+//	@Param			page		query		int	false	"Número da página (>= 1)"	default(1)
+//	@Param			per_page	query		int	false	"Itens por página (1-100)"	default(10)
+//	@Success		200			{object}	list_greetings.Output
+//	@Failure		422			{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro de validação"
+//	@Failure		500			{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro interno"
+//	@Router			/greetings [get]
 func ListGreetings(useCase list_greetings.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
         page, _ := strconv.Atoi(req.URL.Query().Get("page"))

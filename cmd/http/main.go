@@ -12,6 +12,7 @@ import (
     "github.com/diegodesousas/go-devkit/pkg/httpserver"
     "github.com/diegodesousas/go-devkit/pkg/log"
     "github.com/diegodesousas/go-devkit/pkg/metrics"
+    _ "github.com/diegodesousas/greeter/docs"
     "github.com/diegodesousas/greeter/internal/infra/clock"
     "github.com/diegodesousas/greeter/internal/infra/database"
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
@@ -92,10 +93,16 @@ func bootstrapRoutes(repos database.Repositories) httpserver.Option {
     var routeList []httpserver.Route
     routeList = append(routeList, routes.Health()...)
     routeList = append(routeList, routes.Greeting(appClock, repos.Greeting)...)
+    routeList = append(routeList, routes.Docs()...)
 
     return httpserver.WithRoutes(routeList...)
 }
 
+//	@title			Greeter API
+//	@version		1.0
+//	@description	Serviço de saudações - exemplo de Clean Architecture em Go
+//	@host			localhost:3000
+//	@BasePath		/
 func main() {
     if err := bootstrapConfig(); err != nil {
         log.Warn(context.Background(), err.Error())
