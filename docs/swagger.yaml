@@ -1,0 +1,140 @@
+basePath: /
+definitions:
+  github_com_diegodesousas_greeter_internal_application_greet.GreetingDTO:
+    properties:
+      greeted_at:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_diegodesousas_greeter_internal_application_list_greetings.GreetingDTO:
+    properties:
+      greeted_at:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_diegodesousas_greeter_internal_application_list_greetings.Output:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_list_greetings.GreetingDTO'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_list_greetings.PaginationDTO'
+    type: object
+  github_com_diegodesousas_greeter_internal_application_list_greetings.PaginationDTO:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  internal_infra_http_handlers.HealthyResponse:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Serviço de saudações - exemplo de Clean Architecture em Go
+  title: Greeter API
+  version: "1.0"
+paths:
+  /greetings:
+    get:
+      description: Retorna a lista de saudações registradas, com paginação
+      parameters:
+      - default: 1
+        description: Número da página (>= 1)
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página (1-100)
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_list_greetings.Output'
+        "422":
+          description: Erro de validação
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+        "500":
+          description: Erro interno
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+      summary: Lista saudações paginadas
+      tags:
+      - greetings
+  /hello/{name}:
+    get:
+      description: Gera uma saudação para o nome informado e persiste o registro no
+        histórico
+      parameters:
+      - description: Nome da pessoa (1-50 caracteres)
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_greet.GreetingDTO'
+        "422":
+          description: Erro de validação
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+        "500":
+          description: Erro interno
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+      summary: Cumprimenta uma pessoa pelo nome
+      tags:
+      - greetings
+  /liveness:
+    get:
+      description: Indica que o processo está vivo (não verifica dependências externas)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_infra_http_handlers.HealthyResponse'
+      summary: Liveness probe
+      tags:
+      - health
+  /readiness:
+    get:
+      description: Indica que o serviço está pronto para receber tráfego
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_infra_http_handlers.HealthyResponse'
+      summary: Readiness probe
+      tags:
+      - health
+swagger: "2.0"
