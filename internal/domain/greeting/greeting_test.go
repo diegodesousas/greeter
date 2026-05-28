@@ -42,6 +42,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			g := greeting.New(tt.inputName, fixedTime)
 
+			assert.Empty(t, g.ID)
 			assert.Equal(t, tt.inputName, g.Name)
 			assert.Equal(t, tt.wantMessage, g.Message)
 			assert.Equal(t, fixedTime, g.GreetedAt)
