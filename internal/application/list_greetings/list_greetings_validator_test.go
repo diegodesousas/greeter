@@ -18,6 +18,10 @@ func (n *noopRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting,
 	return []greeting.Greeting{}, 0, nil
 }
 
+func (n *noopRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
+	return []greeting.Greeting{}, 0, nil
+}
+
 func TestValidator_Page(t *testing.T) {
 	tests := []struct {
 		name        string

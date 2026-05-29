@@ -12,6 +12,7 @@ import (
 
 	"github.com/diegodesousas/greeter/internal/application/greet"
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
+	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
 	"github.com/diegodesousas/greeter/internal/infra/http/handlers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -169,6 +170,86 @@ func TestListGreetings(t *testing.T) {
 			assert.Equal(t, tt.wantPerPage, mock.capturedDTO.PerPage)
 
 			var body list_greetings.Output
+			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+			assert.Equal(t, tt.useCaseResult.Pagination.Total, body.Pagination.Total)
+		})
+	}
+}
+
+type mockSearchGreetingsUseCase struct {
+	capturedDTO search_greetings.DTO
+	result      search_greetings.Output
+	err         error
+}
+
+func (m *mockSearchGreetingsUseCase) Run(_ context.Context, dto search_greetings.DTO) (search_greetings.Output, error) {
+	m.capturedDTO = dto
+	return m.result, m.err
+}
+
+func TestSearchGreetings(t *testing.T) {
+	fixedTime := time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name          string
+		query         string
+		useCaseResult search_greetings.Output
+		useCaseErr    error
+		wantErr       bool
+		wantName      string
+		wantPage      int
+		wantPerPage   int
+	}{
+		{
+			name:  "success parses name, page and per_page from query",
+			query: "?name=jo%C3%A3o&page=1&per_page=10",
+			useCaseResult: search_greetings.Output{
+				Data: []search_greetings.GreetingDTO{
+					{ID: "abc-123", Message: "Hello, João!", GreetedAt: fixedTime},
+				},
+				Pagination: search_greetings.PaginationDTO{Total: 1, Page: 1, PerPage: 10},
+			},
+			wantName:    "joão",
+			wantPage:    1,
+			wantPerPage: 10,
+		},
+		{
+			name:       "use case error is propagated",
+			query:      "?name=diego&page=1&per_page=10",
+			useCaseErr: errors.New("unexpected error"),
+			wantErr:    true,
+		},
+		{
+			name:        "missing name results in empty string passed to use case",
+			query:       "?page=1&per_page=10",
+			useCaseErr:  errors.New("validation error"),
+			wantErr:     true,
+			wantName:    "",
+			wantPage:    1,
+			wantPerPage: 10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := &mockSearchGreetingsUseCase{result: tt.useCaseResult, err: tt.useCaseErr}
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/greetings/search"+tt.query, nil)
+
+			err := handlers.SearchGreetings(mock)(rec, req)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, tt.wantName, mock.capturedDTO.Name)
+			assert.Equal(t, tt.wantPage, mock.capturedDTO.Page)
+			assert.Equal(t, tt.wantPerPage, mock.capturedDTO.PerPage)
+
+			var body search_greetings.Output
 			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
 			assert.Equal(t, tt.useCaseResult.Pagination.Total, body.Pagination.Total)
 		})

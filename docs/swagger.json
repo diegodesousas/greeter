@@ -57,6 +57,61 @@
                 }
             }
         },
+        "/greetings/search": {
+            "get": {
+                "description": "Retorna saudações cujo nome contenha o termo buscado, ignorando maiúsculas/minúsculas e acentos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "greetings"
+                ],
+                "summary": "Busca saudações por nome",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Termo de busca pelo nome",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Número da página (\u003e= 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Itens por página (1-100)",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.Output"
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/hello": {
             "post": {
                 "description": "Gera uma saudação para o nome informado e persiste o registro no histórico",
@@ -191,6 +246,48 @@
             }
         },
         "github_com_diegodesousas_greeter_internal_application_list_greetings.PaginationDTO": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_diegodesousas_greeter_internal_application_search_greetings.GreetingDTO": {
+            "type": "object",
+            "properties": {
+                "greeted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_diegodesousas_greeter_internal_application_search_greetings.Output": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.GreetingDTO"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.PaginationDTO"
+                }
+            }
+        },
+        "github_com_diegodesousas_greeter_internal_application_search_greetings.PaginationDTO": {
             "type": "object",
             "properties": {
                 "page": {
