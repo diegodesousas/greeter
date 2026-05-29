@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
 	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
 	"github.com/diegodesousas/greeter/internal/infra/http/handlers"
-	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,38 +40,49 @@ func (m *mockListGreetingsUseCase) Run(_ context.Context, dto list_greetings.DTO
 	return m.result, m.err
 }
 
-func requestWithParam(method, target, key, value string) *http.Request {
-	req := httptest.NewRequest(method, target, nil)
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add(key, value)
-	return req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-}
-
 func TestHello(t *testing.T) {
 	fixedTime := time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name          string
-		param         string
+		body          string
 		useCaseResult greet.GreetingDTO
 		useCaseErr    error
 		wantErr       bool
+		wantName      string
 		wantMessage   string
 	}{
 		{
-			name:  "success",
-			param: "Diego",
+			name: "success decodes name from json body",
+			body: `{"name":"Diego"}`,
 			useCaseResult: greet.GreetingDTO{
 				Message:   "Hello, Diego!",
 				GreetedAt: fixedTime,
 			},
+			wantName:    "Diego",
 			wantMessage: "Hello, Diego!",
 		},
 		{
 			name:       "use case error is propagated",
-			param:      "Diego",
+			body:       `{"name":"Diego"}`,
 			useCaseErr: errors.New("unexpected error"),
 			wantErr:    true,
+		},
+		{
+			name:    "empty body results in empty name passed to use case",
+			body:    "",
+			wantErr: false,
+			useCaseResult: greet.GreetingDTO{
+				Message:   "Hello, !",
+				GreetedAt: fixedTime,
+			},
+			wantName:    "",
+			wantMessage: "Hello, !",
+		},
+		{
+			name:    "malformed json body returns error",
+			body:    `{"name":`,
+			wantErr: true,
 		},
 	}
 
@@ -79,7 +90,7 @@ func TestHello(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &mockGreetUseCase{result: tt.useCaseResult, err: tt.useCaseErr}
 			rec := httptest.NewRecorder()
-			req := requestWithParam(http.MethodGet, "/hello/Diego", "name", tt.param)
+			req := httptest.NewRequest(http.MethodPost, "/hello", strings.NewReader(tt.body))
 
 			err := handlers.Hello(mock)(rec, req)
 
@@ -89,7 +100,7 @@ func TestHello(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tt.param, mock.capturedDTO.Name)
+			assert.Equal(t, tt.wantName, mock.capturedDTO.Name)
 			assert.Equal(t, http.StatusOK, rec.Code)
 
 			var body greet.GreetingDTO

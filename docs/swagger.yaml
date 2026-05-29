@@ -71,6 +71,11 @@ definitions:
       message:
         type: string
     type: object
+  internal_infra_http_handlers.HelloRequest:
+    properties:
+      name:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact: {}
@@ -148,16 +153,19 @@ paths:
       summary: Busca saudações por nome
       tags:
       - greetings
-  /hello/{name}:
-    get:
+  /hello:
+    post:
+      consumes:
+      - application/json
       description: Gera uma saudação para o nome informado e persiste o registro no
         histórico
       parameters:
-      - description: Nome da pessoa (1-50 caracteres)
-        in: path
-        name: name
+      - description: Dados da saudação
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/internal_infra_http_handlers.HelloRequest'
       produces:
       - application/json
       responses:
@@ -165,6 +173,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_greet.GreetingDTO'
+        "400":
+          description: Body inválido
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
         "422":
           description: Erro de validação
           schema:
