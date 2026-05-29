@@ -1,6 +1,9 @@
 package handlers
 
 import (
+    "encoding/json"
+    "errors"
+    "io"
     "net/http"
     "strconv"
 
@@ -10,21 +13,32 @@ import (
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
 )
 
+type HelloRequest struct {
+    Name string `json:"name"`
+}
+
 // Hello godoc
 //
 //	@Summary		Cumprimenta uma pessoa pelo nome
 //	@Description	Gera uma saudação para o nome informado e persiste o registro no histórico
 //	@Tags			greetings
+//	@Accept			json
 //	@Produce		json
-//	@Param			name	path		string	true	"Nome da pessoa (1-50 caracteres)"
+//	@Param			request	body		HelloRequest	true	"Dados da saudação"
 //	@Success		200		{object}	greet.GreetingDTO
+//	@Failure		400		{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Body inválido"
 //	@Failure		422		{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro de validação"
 //	@Failure		500		{object}	github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse	"Erro interno"
-//	@Router			/hello/{name} [get]
+//	@Router			/hello [post]
 func Hello(useCase greet.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
+        var body HelloRequest
+        if err := json.NewDecoder(req.Body).Decode(&body); err != nil && !errors.Is(err, io.EOF) {
+            return err
+        }
+
         dto := greet.DTO{
-            Name: httpserver.GetParam(req, "name"),
+            Name: body.Name,
         }
 
         result, err := useCase.Run(req.Context(), dto)

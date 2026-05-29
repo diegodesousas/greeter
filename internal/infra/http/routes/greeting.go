@@ -14,7 +14,7 @@ func Greeting(clock clock.Clock, repo greeting.Repository) []httpserver.Route {
     listUseCase := list_greetings.NewUseCase(repo)
 
     return []httpserver.Route{
-        httpserver.NewGet("/hello/{name}", handlers.Hello(greetUseCase)),
+        httpserver.NewPost("/hello", handlers.Hello(greetUseCase)),
         httpserver.NewGet("/greetings", handlers.ListGreetings(listUseCase)),
     }
 }
