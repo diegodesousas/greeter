@@ -25,6 +25,10 @@ func (m *mockRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting,
 	return nil, 0, m.err
 }
 
+func (m *mockRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
+	return nil, 0, m.err
+}
+
 var fixedTime = time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
 
 func TestRun(t *testing.T) {

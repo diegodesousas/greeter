@@ -1,4 +1,4 @@
-package list_greetings_test
+package search_greetings_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
+	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,21 +32,21 @@ func (m *mockRepository) Search(_ context.Context, _ string, _, _ int) ([]greeti
 
 func TestRun(t *testing.T) {
 	tests := []struct {
-		name       string
-		dto        list_greetings.DTO
-		repo       *mockRepository
-		wantTotal  int
-		wantLen    int
-		wantErr    bool
+		name        string
+		dto         search_greetings.DTO
+		repo        *mockRepository
+		wantTotal   int
+		wantLen     int
+		wantErr     bool
 		errContains string
 	}{
 		{
 			name: "success with results",
-			dto:  list_greetings.DTO{Page: 1, PerPage: 10},
+			dto:  search_greetings.DTO{Name: "joão", Page: 1, PerPage: 10},
 			repo: &mockRepository{
 				greetings: []greeting.Greeting{
-					{ID: "abc-123", Name: "Diego", Message: "Hello, Diego!", GreetedAt: fixedTime},
-					{ID: "def-456", Name: "Ana", Message: "Hello, Ana!", GreetedAt: fixedTime},
+					{ID: "abc-123", Name: "João", Message: "Hello, João!", GreetedAt: fixedTime},
+					{ID: "def-456", Name: "Joana", Message: "Hello, Joana!", GreetedAt: fixedTime},
 				},
 				total: 2,
 			},
@@ -55,35 +55,42 @@ func TestRun(t *testing.T) {
 		},
 		{
 			name:      "success with empty results",
-			dto:       list_greetings.DTO{Page: 1, PerPage: 10},
+			dto:       search_greetings.DTO{Name: "xpto", Page: 1, PerPage: 10},
 			repo:      &mockRepository{greetings: []greeting.Greeting{}, total: 0},
 			wantTotal: 0,
 			wantLen:   0,
 		},
 		{
-			name:        "page less than one",
-			dto:         list_greetings.DTO{Page: 0, PerPage: 10},
+			name:        "empty name fails validation",
+			dto:         search_greetings.DTO{Name: "", Page: 1, PerPage: 10},
+			repo:        &mockRepository{},
+			wantErr:     true,
+			errContains: "name",
+		},
+		{
+			name:        "page less than one fails validation",
+			dto:         search_greetings.DTO{Name: "diego", Page: 0, PerPage: 10},
 			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "page",
 		},
 		{
-			name:        "per_page zero",
-			dto:         list_greetings.DTO{Page: 1, PerPage: 0},
+			name:        "per_page zero fails validation",
+			dto:         search_greetings.DTO{Name: "diego", Page: 1, PerPage: 0},
 			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "per_page",
 		},
 		{
-			name:        "per_page exceeds max",
-			dto:         list_greetings.DTO{Page: 1, PerPage: 101},
+			name:        "per_page exceeds max fails validation",
+			dto:         search_greetings.DTO{Name: "diego", Page: 1, PerPage: 101},
 			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "per_page",
 		},
 		{
-			name:    "repository error",
-			dto:     list_greetings.DTO{Page: 1, PerPage: 10},
+			name:    "repository error is propagated",
+			dto:     search_greetings.DTO{Name: "diego", Page: 1, PerPage: 10},
 			repo:    &mockRepository{err: errors.New("db connection failed")},
 			wantErr: true,
 		},
@@ -91,7 +98,7 @@ func TestRun(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := list_greetings.NewUseCase(tt.repo)
+			useCase := search_greetings.NewUseCase(tt.repo)
 
 			result, err := useCase.Run(context.Background(), tt.dto)
 

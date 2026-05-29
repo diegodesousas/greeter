@@ -164,3 +164,63 @@ func TestGreetingRepository_List(t *testing.T) {
 		})
 	}
 }
+
+func TestGreetingRepository_Search(t *testing.T) {
+	tests := []struct {
+		name      string
+		page      int
+		perPage   int
+		getResult int
+		getErr    error
+		selectErr error
+		wantTotal int
+		wantLen   int
+		wantErr   bool
+	}{
+		{
+			name:      "returns matching greetings and total",
+			page:      1,
+			perPage:   10,
+			getResult: 2,
+			wantTotal: 2,
+			wantLen:   0,
+		},
+		{
+			name:    "count query error is propagated",
+			page:    1,
+			perPage: 10,
+			getErr:  errors.New("db error"),
+			wantErr: true,
+		},
+		{
+			name:      "select query error is propagated",
+			page:      1,
+			perPage:   10,
+			getResult: 1,
+			selectErr: errors.New("db error"),
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			conn := &mockConnection{
+				getResult: tt.getResult,
+				getErr:    tt.getErr,
+				selectErr: tt.selectErr,
+			}
+			repo := database.NewGreetingRepository(conn)
+
+			greetings, total, err := repo.Search(context.Background(), "joao", tt.page, tt.perPage)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantTotal, total)
+			assert.Len(t, greetings, tt.wantLen)
+		})
+	}
+}
