@@ -34,6 +34,33 @@ definitions:
       total:
         type: integer
     type: object
+  github_com_diegodesousas_greeter_internal_application_search_greetings.GreetingDTO:
+    properties:
+      greeted_at:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_diegodesousas_greeter_internal_application_search_greetings.Output:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.GreetingDTO'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.PaginationDTO'
+    type: object
+  github_com_diegodesousas_greeter_internal_application_search_greetings.PaginationDTO:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+    type: object
   github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse:
     properties:
       message:
@@ -81,6 +108,44 @@ paths:
           schema:
             $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
       summary: Lista saudações paginadas
+      tags:
+      - greetings
+  /greetings/search:
+    get:
+      description: Retorna saudações cujo nome contenha o termo buscado, ignorando
+        maiúsculas/minúsculas e acentos
+      parameters:
+      - description: Termo de busca pelo nome
+        in: query
+        name: name
+        required: true
+        type: string
+      - default: 1
+        description: Número da página (>= 1)
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página (1-100)
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_application_search_greetings.Output'
+        "422":
+          description: Erro de validação
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+        "500":
+          description: Erro interno
+          schema:
+            $ref: '#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse'
+      summary: Busca saudações por nome
       tags:
       - greetings
   /hello/{name}:
