@@ -63,9 +63,12 @@ const docTemplate = `{
                 }
             }
         },
-        "/hello/{name}": {
-            "get": {
+        "/hello": {
+            "post": {
                 "description": "Gera uma saudação para o nome informado e persiste o registro no histórico",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -75,11 +78,13 @@ const docTemplate = `{
                 "summary": "Cumprimenta uma pessoa pelo nome",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Nome da pessoa (1-50 caracteres)",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
+                        "description": "Dados da saudação",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_http_handlers.HelloRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -87,6 +92,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_application_greet.GreetingDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Body inválido",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse"
                         }
                     },
                     "422": {
@@ -211,6 +222,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_infra_http_handlers.HelloRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
