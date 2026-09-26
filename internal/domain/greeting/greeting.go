@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// NameMaxLength is the maximum number of characters a greeted name may have.
+const NameMaxLength = 50
+
 type Greeting struct {
 	ID        string
 	Name      string

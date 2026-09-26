@@ -37,7 +37,7 @@ This service follows Clean Architecture with three layers:
 
 **Domain** (`internal/domain/`) — pure business entities, no dependencies.
 
-**Application** (`internal/application/`) — use cases that orchestrate domain logic. Each use case receives a `DTO`, runs a `validator.Validator[DTO]` before executing, and returns an output DTO. Validators are composed of individual rule functions and built with `validator.New[T](rules...)`.
+**Application** (`internal/application/`) — use cases that orchestrate domain logic. Each use case receives a `DTO`, runs a `validator.Validator[DTO]` before executing, and returns an output DTO. Validators are composed of individual rule functions and built with `validator.New[T](rules...)`. Generic rules reusable across DTOs live in `internal/application/validation` (e.g. `validation.MaxLength("name", greeting.NameMaxLength, func(dto DTO) string { return dto.Name })`); prefer them over re-implementing the same check per use case.
 
 **Infrastructure** (`internal/infra/`) — adapters for the outside world:
 - `http/handlers/` — HTTP handlers implementing `httpserver.Handler` (returns `error`). Handlers call use cases and write JSON via `infrahttp.WriteJson`.

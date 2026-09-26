@@ -2,10 +2,10 @@ package greet
 
 import (
 	"context"
-	"fmt"
-	"unicode/utf8"
 
 	"github.com/diegodesousas/go-devkit/pkg/validator"
+	"github.com/diegodesousas/greeter/internal/application/validation"
+	"github.com/diegodesousas/greeter/internal/domain/greeting"
 )
 
 func nameRequired(_ context.Context, dto DTO) error {
@@ -16,22 +16,9 @@ func nameRequired(_ context.Context, dto DTO) error {
 	return nil
 }
 
-func nameMaxLength(_ context.Context, dto DTO) error {
-	var maxLength = 50
-
-	if utf8.RuneCountInString(dto.Name) > maxLength {
-		return validator.Error{
-			Code:    "max_length",
-			Message: fmt.Sprintf("attribute name must have at most %d characters", maxLength),
-		}
-	}
-
-	return nil
-}
-
 func newGreetValidator() validator.Validator[DTO] {
 	return validator.New[DTO](
 		nameRequired,
-		nameMaxLength,
+		validation.MaxLength("name", greeting.NameMaxLength, func(dto DTO) string { return dto.Name }),
 	)
 }
