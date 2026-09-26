@@ -12,12 +12,12 @@ import (
     "github.com/diegodesousas/go-devkit/pkg/httpserver"
     "github.com/diegodesousas/go-devkit/pkg/log"
     "github.com/diegodesousas/go-devkit/pkg/metrics"
+    "github.com/diegodesousas/go-devkit/pkg/shutdown"
     _ "github.com/diegodesousas/greeter/docs"
     "github.com/diegodesousas/greeter/internal/infra/clock"
     "github.com/diegodesousas/greeter/internal/infra/database"
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
     "github.com/diegodesousas/greeter/internal/infra/http/routes"
-    "github.com/diegodesousas/greeter/internal/infra/shutdown"
     "github.com/spf13/viper"
 )
 
