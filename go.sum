@@ -66,8 +66,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8Yc
 github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
 github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 h1:fAjc9m62+UWV/WAFKLNi6ZS0675eEUC9y3AlwSbQu1Y=
 github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
-github.com/diegodesousas/go-devkit v0.0.1 h1:KxkkkFBE7i6u8UuPKo65E8BEfPkxco9J+9PyVofxh04=
-github.com/diegodesousas/go-devkit v0.0.1/go.mod h1:ycGPz8Sc5S8KrlesgJa6dpQRDZnaaB5209dCSbf3kkg=
+github.com/diegodesousas/go-devkit v0.3.0 h1:GdhHfuWIIc/ytHetXtI+0vwSH/TpJJtoR+3NTThELFM=
+github.com/diegodesousas/go-devkit v0.3.0/go.mod h1:RnZdwNmhr/Y5wEihnDiBsS61RDwHnO2AVIgqBqx49mI=
 github.com/docker/cli v27.4.1+incompatible h1:VzPiUlRJ/xh+otB75gva3r05isHMo5wXDfPRi5/b4hI=
 github.com/docker/cli v27.4.1+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvMKP+vjCwu2uszcLI8=
 github.com/docker/docker v27.1.1+incompatible h1:hO/M4MtV36kzKldqnA37IWhebRA+LnqqcqDja6kVaKY=

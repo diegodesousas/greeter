@@ -6,7 +6,7 @@ import (
 	"github.com/diegodesousas/go-devkit/pkg/encoding"
 )
 
-var serializer = encoding.NewJsonSerializer()
+var serializer = encoding.NewJSONSerializer()
 
 func WriteJson(w http.ResponseWriter, serializable any) error {
 	body, err := serializer.Serialize(serializable)

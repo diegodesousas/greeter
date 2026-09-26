@@ -23,7 +23,7 @@ func (e ErrorHandlerValidation) Write(w http.ResponseWriter, err error) error {
 		Message: validatorError.Message,
 	}
 
-	body, _ := encoding.NewJsonSerializer().Serialize(response)
+	body, _ := encoding.NewJSONSerializer().Serialize(response)
 
 	w.WriteHeader(http.StatusUnprocessableEntity)
 
