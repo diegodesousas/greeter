@@ -2,6 +2,7 @@ package greet
 
 import (
     "context"
+    "strings"
     "time"
 
     "github.com/diegodesousas/greeter/internal/domain/greeting"
@@ -37,6 +38,8 @@ func NewUseCase(clock clock.Clock, repo greeting.Repository) UseCase {
 }
 
 func (u greetUseCase) Run(ctx context.Context, dto DTO) (GreetingDTO, error) {
+    dto.Name = strings.TrimSpace(dto.Name)
+
     if err := u.validator.Validate(ctx, dto); err != nil {
         return GreetingDTO{}, err
     }

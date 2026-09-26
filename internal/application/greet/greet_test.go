@@ -17,9 +17,15 @@ type fixedClock struct{ t time.Time }
 
 func (f fixedClock) Now() time.Time { return f.t }
 
-type mockRepository struct{ err error }
+type mockRepository struct {
+	err   error
+	saved greeting.Greeting
+}
 
-func (m *mockRepository) Save(_ context.Context, _ greeting.Greeting) error { return m.err }
+func (m *mockRepository) Save(_ context.Context, g greeting.Greeting) error {
+	m.saved = g
+	return m.err
+}
 
 func (m *mockRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
 	return nil, 0, m.err
@@ -36,21 +42,38 @@ func TestRun(t *testing.T) {
 		name        string
 		dto         greet.DTO
 		repo        *mockRepository
-		wantMessage string
-		wantErr     bool
-		errContains string
+		wantMessage   string
+		wantSavedName string
+		wantErr       bool
+		errContains   string
 	}{
 		{
-			name:        "success",
-			dto:         greet.DTO{Name: "Diego"},
-			repo:        &mockRepository{},
-			wantMessage: "Hello, Diego!",
+			name:          "success",
+			dto:           greet.DTO{Name: "Diego"},
+			repo:          &mockRepository{},
+			wantMessage:   "Hello, Diego!",
+			wantSavedName: "Diego",
 		},
 		{
-			name:        "name at max length",
-			dto:         greet.DTO{Name: strings.Repeat("a", 50)},
+			name:          "surrounding whitespace is trimmed before saving",
+			dto:           greet.DTO{Name: "  Diego \t\n"},
+			repo:          &mockRepository{},
+			wantMessage:   "Hello, Diego!",
+			wantSavedName: "Diego",
+		},
+		{
+			name:        "whitespace-only name",
+			dto:         greet.DTO{Name: "   "},
 			repo:        &mockRepository{},
-			wantMessage: "Hello, " + strings.Repeat("a", 50) + "!",
+			wantErr:     true,
+			errContains: "name",
+		},
+		{
+			name:          "name at max length",
+			dto:           greet.DTO{Name: strings.Repeat("a", 50)},
+			repo:          &mockRepository{},
+			wantMessage:   "Hello, " + strings.Repeat("a", 50) + "!",
+			wantSavedName: strings.Repeat("a", 50),
 		},
 		{
 			name:        "name empty",
@@ -91,6 +114,7 @@ func TestRun(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantMessage, result.Message)
 			assert.Equal(t, fixedTime, result.GreetedAt)
+			assert.Equal(t, tt.wantSavedName, tt.repo.saved.Name)
 		})
 	}
 }

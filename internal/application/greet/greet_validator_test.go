@@ -37,6 +37,9 @@ func TestValidator_Name(t *testing.T) {
 	}{
 		{name: "simple name is valid", input: "Diego", wantErr: false},
 		{name: "empty name fails", input: "", wantErr: true, errContains: "name"},
+		{name: "whitespace-only name fails", input: "   ", wantErr: true, errContains: "name"},
+		{name: "tabs and newlines only fails", input: "\t\n ", wantErr: true, errContains: "name"},
+		{name: "50 characters with surrounding spaces is valid", input: "  " + strings.Repeat("a", 50) + "  ", wantErr: false},
 		{name: "50 ascii characters is valid", input: strings.Repeat("a", 50), wantErr: false},
 		{name: "51 ascii characters fails", input: strings.Repeat("a", 51), wantErr: true, errContains: "at most 50 characters"},
 		{name: "50 accented characters is valid", input: strings.Repeat("ã", 50), wantErr: false},
