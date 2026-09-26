@@ -9,19 +9,10 @@ import (
 
 	infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
 	"github.com/diegodesousas/greeter/internal/infra/http/handlers"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type mockPinger struct {
-	err   error
-	calls int
-}
-
-func (m *mockPinger) Ping() error {
-	m.calls++
-	return m.err
-}
 
 func TestHealthReadiness(t *testing.T) {
 	pingErr := errors.New("dial tcp: connection refused")
@@ -43,13 +34,12 @@ func TestHealthReadiness(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db := &mockPinger{err: tt.pingErr}
+			db := mocks.NewMockPinger(t)
+			db.EXPECT().Ping().Return(tt.pingErr).Once()
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/readiness", nil)
 
 			err := handlers.HealthReadiness(db)(rec, req)
-
-			assert.Equal(t, 1, db.calls)
 
 			if tt.wantErrIs != nil {
 				require.Error(t, err)
