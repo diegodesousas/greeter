@@ -15,9 +15,9 @@ func nameRequired(_ context.Context, dto DTO) error {
 	return nil
 }
 
-const maxNameLength = 50
-
 func nameMaxLength(_ context.Context, dto DTO) error {
+	const maxNameLength = 50
+
 	if validation.ExceedsMaxLength(dto.Name, maxNameLength) {
 		return validator.Error{
 			Code:    "max_length",
