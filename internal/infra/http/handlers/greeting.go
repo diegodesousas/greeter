@@ -2,13 +2,17 @@ package handlers
 
 import (
     "net/http"
-    "strconv"
 
     "github.com/diegodesousas/go-devkit/pkg/httpserver"
     "github.com/diegodesousas/greeter/internal/application/greet"
     list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
     search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
     infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
+)
+
+const (
+    defaultPage    = 1
+    defaultPerPage = 10
 )
 
 type HelloRequest struct {
@@ -62,8 +66,15 @@ func Hello(useCase greet.UseCase) httpserver.Handler {
 //	@Router			/greetings [get]
 func ListGreetings(useCase list_greetings.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
-        page, _ := strconv.Atoi(req.URL.Query().Get("page"))
-        perPage, _ := strconv.Atoi(req.URL.Query().Get("per_page"))
+        page, err := infrahttp.QueryInt(req, "page", defaultPage)
+        if err != nil {
+            return err
+        }
+
+        perPage, err := infrahttp.QueryInt(req, "per_page", defaultPerPage)
+        if err != nil {
+            return err
+        }
 
         dto := list_greetings.DTO{
             Page:    page,
@@ -94,8 +105,15 @@ func ListGreetings(useCase list_greetings.UseCase) httpserver.Handler {
 //	@Router			/greetings/search [get]
 func SearchGreetings(useCase search_greetings.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
-        page, _ := strconv.Atoi(req.URL.Query().Get("page"))
-        perPage, _ := strconv.Atoi(req.URL.Query().Get("per_page"))
+        page, err := infrahttp.QueryInt(req, "page", defaultPage)
+        if err != nil {
+            return err
+        }
+
+        perPage, err := infrahttp.QueryInt(req, "per_page", defaultPerPage)
+        if err != nil {
+            return err
+        }
 
         dto := search_greetings.DTO{
             Name:    req.URL.Query().Get("name"),

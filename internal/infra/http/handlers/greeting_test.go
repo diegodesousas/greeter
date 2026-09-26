@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/diegodesousas/go-devkit/pkg/validator"
 	"github.com/diegodesousas/greeter/internal/application/greet"
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
 	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
@@ -132,6 +133,7 @@ func TestListGreetings(t *testing.T) {
 		useCaseResult  list_greetings.Output
 		useCaseErr     error
 		wantErr        bool
+		wantErrMsg     string
 		wantPage       int
 		wantPerPage    int
 	}{
@@ -154,12 +156,25 @@ func TestListGreetings(t *testing.T) {
 			wantErr:     true,
 		},
 		{
-			name:        "missing query params result in zero values passed to use case",
-			query:       "",
-			useCaseErr:  errors.New("validation error"),
-			wantErr:     true,
-			wantPage:    0,
-			wantPerPage: 0,
+			name:  "missing query params fall back to page 1 and per_page 10",
+			query: "",
+			useCaseResult: list_greetings.Output{
+				Pagination: list_greetings.PaginationDTO{Total: 0, Page: 1, PerPage: 10},
+			},
+			wantPage:    1,
+			wantPerPage: 10,
+		},
+		{
+			name:       "non-numeric page returns validation error",
+			query:      "?page=abc&per_page=10",
+			wantErr:    true,
+			wantErrMsg: "attribute page must be an integer",
+		},
+		{
+			name:       "non-numeric per_page returns validation error",
+			query:      "?page=1&per_page=abc",
+			wantErr:    true,
+			wantErrMsg: "attribute per_page must be an integer",
 		},
 	}
 
@@ -173,6 +188,11 @@ func TestListGreetings(t *testing.T) {
 
 			if tt.wantErr {
 				require.Error(t, err)
+				if tt.wantErrMsg != "" {
+					var validationErr validator.Error
+					require.True(t, errors.As(err, &validationErr), "expected validator.Error, got %v", err)
+					assert.Equal(t, tt.wantErrMsg, validationErr.Message)
+				}
 				return
 			}
 
@@ -208,6 +228,7 @@ func TestSearchGreetings(t *testing.T) {
 		useCaseResult search_greetings.Output
 		useCaseErr    error
 		wantErr       bool
+		wantErrMsg    string
 		wantName      string
 		wantPage      int
 		wantPerPage   int
@@ -240,6 +261,28 @@ func TestSearchGreetings(t *testing.T) {
 			wantPage:    1,
 			wantPerPage: 10,
 		},
+		{
+			name:  "missing page and per_page fall back to page 1 and per_page 10",
+			query: "?name=diego",
+			useCaseResult: search_greetings.Output{
+				Pagination: search_greetings.PaginationDTO{Total: 0, Page: 1, PerPage: 10},
+			},
+			wantName:    "diego",
+			wantPage:    1,
+			wantPerPage: 10,
+		},
+		{
+			name:       "non-numeric page returns validation error",
+			query:      "?name=diego&page=abc",
+			wantErr:    true,
+			wantErrMsg: "attribute page must be an integer",
+		},
+		{
+			name:       "non-numeric per_page returns validation error",
+			query:      "?name=diego&per_page=abc",
+			wantErr:    true,
+			wantErrMsg: "attribute per_page must be an integer",
+		},
 	}
 
 	for _, tt := range tests {
@@ -252,6 +295,11 @@ func TestSearchGreetings(t *testing.T) {
 
 			if tt.wantErr {
 				require.Error(t, err)
+				if tt.wantErrMsg != "" {
+					var validationErr validator.Error
+					require.True(t, errors.As(err, &validationErr), "expected validator.Error, got %v", err)
+					assert.Equal(t, tt.wantErrMsg, validationErr.Message)
+				}
 				return
 			}
 
