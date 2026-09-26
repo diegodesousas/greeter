@@ -51,7 +51,7 @@ This service follows Clean Architecture with three layers:
 
 1. Define a `DTO` and output struct in `internal/application/<feature>/`.
 2. Implement `UseCase` interface with a `Run(ctx, dto)` method; add validators via `newXxxValidator()`.
-3. Create a handler in `internal/infra/http/handlers/` that reads path params with `httpserver.GetParam(req, "param")` and JSON bodies with `infrahttp.ReadJson(req, &body)` (malformed JSON becomes a 400).
+3. Create a handler in `internal/infra/http/handlers/` that reads input only through the `infrahttp` helpers: `ReadJson(req, &body)` for JSON bodies (malformed JSON becomes a 400), `QueryString`/`QueryInt` for query params and `PathParam` for path params. They trim surrounding whitespace from every string before it reaches the DTO (`ReadJson` uses `sanitize.TrimStrings`; opt a field out with the `trim:"-"` tag). Do not read `req.URL.Query()`, `httpserver.GetParam` or the body directly.
 4. Register the route in `internal/infra/http/routes/` using `httpserver.NewGet/Post/...`.
 5. Append the route group in `cmd/http/main.go` `bootstrapRoutes()`.
 

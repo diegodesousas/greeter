@@ -111,7 +111,7 @@ func SearchGreetings(useCase search_greetings.UseCase) httpserver.Handler {
         }
 
         dto := search_greetings.DTO{
-            Name:    req.URL.Query().Get("name"),
+            Name:    infrahttp.QueryString(req, "name"),
             Page:    page,
             PerPage: perPage,
         }

@@ -72,6 +72,26 @@ func TestHello(t *testing.T) {
 			wantErr:    true,
 		},
 		{
+			name: "surrounding whitespace is trimmed before reaching use case",
+			body: `{"name":"  Diego \t\n"}`,
+			useCaseResult: greet.GreetingDTO{
+				Message:   "Hello, Diego!",
+				GreetedAt: fixedTime,
+			},
+			wantName:    "Diego",
+			wantMessage: "Hello, Diego!",
+		},
+		{
+			name: "whitespace-only name reaches use case as empty",
+			body: `{"name":"   "}`,
+			useCaseResult: greet.GreetingDTO{
+				Message:   "Hello, !",
+				GreetedAt: fixedTime,
+			},
+			wantName:    "",
+			wantMessage: "Hello, !",
+		},
+		{
 			name:    "empty body results in empty name passed to use case",
 			body:    "",
 			wantErr: false,
@@ -258,6 +278,16 @@ func TestSearchGreetings(t *testing.T) {
 			useCaseErr:  errors.New("validation error"),
 			wantErr:     true,
 			wantName:    "",
+			wantPage:    1,
+			wantPerPage: 10,
+		},
+		{
+			name:  "name is trimmed before reaching use case",
+			query: "?name=%20%20jo%C3%A3o%20silva%09",
+			useCaseResult: search_greetings.Output{
+				Pagination: search_greetings.PaginationDTO{Total: 0, Page: 1, PerPage: 10},
+			},
+			wantName:    "joão silva",
 			wantPage:    1,
 			wantPerPage: 10,
 		},
