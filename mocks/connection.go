@@ -155,7 +155,7 @@ func (_c *MockConnection_Close_Call) RunAndReturn(run func() error) *MockConnect
 }
 
 // Exec provides a mock function for the type MockConnection
-func (_mock *MockConnection) Exec(ctx context.Context, query string, args ...interface{}) (sql0.Result, error) {
+func (_mock *MockConnection) Exec(ctx context.Context, query string, args ...any) (sql0.Result, error) {
 	var _ca []any
 	_ca = append(_ca, ctx, query)
 	_ca = append(_ca, args...)
@@ -167,17 +167,17 @@ func (_mock *MockConnection) Exec(ctx context.Context, query string, args ...int
 
 	var r0 sql0.Result
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ...interface{}) (sql0.Result, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ...any) (sql0.Result, error)); ok {
 		return returnFunc(ctx, query, args...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ...interface{}) sql0.Result); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ...any) sql0.Result); ok {
 		r0 = returnFunc(ctx, query, args...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(sql0.Result)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, ...interface{}) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, ...any) error); ok {
 		r1 = returnFunc(ctx, query, args...)
 	} else {
 		r1 = ret.Error(1)
@@ -193,13 +193,13 @@ type MockConnection_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - query string
-//   - args ...interface{}
+//   - args ...any
 func (_e *MockConnection_Expecter) Exec(ctx any, query any, args ...any) *MockConnection_Exec_Call {
 	return &MockConnection_Exec_Call{Call: _e.mock.On("Exec",
 		append([]any{ctx, query}, args...)...)}
 }
 
-func (_c *MockConnection_Exec_Call) Run(run func(ctx context.Context, query string, args ...interface{})) *MockConnection_Exec_Call {
+func (_c *MockConnection_Exec_Call) Run(run func(ctx context.Context, query string, args ...any)) *MockConnection_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -209,11 +209,11 @@ func (_c *MockConnection_Exec_Call) Run(run func(ctx context.Context, query stri
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 []interface{}
-		variadicArgs := make([]interface{}, len(args)-2)
+		var arg2 []any
+		variadicArgs := make([]any, len(args)-2)
 		for i, a := range args[2:] {
 			if a != nil {
-				variadicArgs[i] = a.(interface{})
+				variadicArgs[i] = a.(any)
 			}
 		}
 		arg2 = variadicArgs
@@ -231,13 +231,13 @@ func (_c *MockConnection_Exec_Call) Return(result sql0.Result, err error) *MockC
 	return _c
 }
 
-func (_c *MockConnection_Exec_Call) RunAndReturn(run func(ctx context.Context, query string, args ...interface{}) (sql0.Result, error)) *MockConnection_Exec_Call {
+func (_c *MockConnection_Exec_Call) RunAndReturn(run func(ctx context.Context, query string, args ...any) (sql0.Result, error)) *MockConnection_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Get provides a mock function for the type MockConnection
-func (_mock *MockConnection) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (_mock *MockConnection) Get(ctx context.Context, dest any, query string, args ...any) error {
 	var _ca []any
 	_ca = append(_ca, ctx, dest, query)
 	_ca = append(_ca, args...)
@@ -248,7 +248,7 @@ func (_mock *MockConnection) Get(ctx context.Context, dest interface{}, query st
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, interface{}, string, ...interface{}) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, string, ...any) error); ok {
 		r0 = returnFunc(ctx, dest, query, args...)
 	} else {
 		r0 = ret.Error(0)
@@ -263,33 +263,33 @@ type MockConnection_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
-//   - dest interface{}
+//   - dest any
 //   - query string
-//   - args ...interface{}
+//   - args ...any
 func (_e *MockConnection_Expecter) Get(ctx any, dest any, query any, args ...any) *MockConnection_Get_Call {
 	return &MockConnection_Get_Call{Call: _e.mock.On("Get",
 		append([]any{ctx, dest, query}, args...)...)}
 }
 
-func (_c *MockConnection_Get_Call) Run(run func(ctx context.Context, dest interface{}, query string, args ...interface{})) *MockConnection_Get_Call {
+func (_c *MockConnection_Get_Call) Run(run func(ctx context.Context, dest any, query string, args ...any)) *MockConnection_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 interface{}
+		var arg1 any
 		if args[1] != nil {
-			arg1 = args[1].(interface{})
+			arg1 = args[1].(any)
 		}
 		var arg2 string
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
-		var arg3 []interface{}
-		variadicArgs := make([]interface{}, len(args)-3)
+		var arg3 []any
+		variadicArgs := make([]any, len(args)-3)
 		for i, a := range args[3:] {
 			if a != nil {
-				variadicArgs[i] = a.(interface{})
+				variadicArgs[i] = a.(any)
 			}
 		}
 		arg3 = variadicArgs
@@ -308,7 +308,7 @@ func (_c *MockConnection_Get_Call) Return(err error) *MockConnection_Get_Call {
 	return _c
 }
 
-func (_c *MockConnection_Get_Call) RunAndReturn(run func(ctx context.Context, dest interface{}, query string, args ...interface{}) error) *MockConnection_Get_Call {
+func (_c *MockConnection_Get_Call) RunAndReturn(run func(ctx context.Context, dest any, query string, args ...any) error) *MockConnection_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -358,7 +358,7 @@ func (_c *MockConnection_Ping_Call) RunAndReturn(run func() error) *MockConnecti
 }
 
 // Select provides a mock function for the type MockConnection
-func (_mock *MockConnection) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (_mock *MockConnection) Select(ctx context.Context, dest any, query string, args ...any) error {
 	var _ca []any
 	_ca = append(_ca, ctx, dest, query)
 	_ca = append(_ca, args...)
@@ -369,7 +369,7 @@ func (_mock *MockConnection) Select(ctx context.Context, dest interface{}, query
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, interface{}, string, ...interface{}) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, string, ...any) error); ok {
 		r0 = returnFunc(ctx, dest, query, args...)
 	} else {
 		r0 = ret.Error(0)
@@ -384,33 +384,33 @@ type MockConnection_Select_Call struct {
 
 // Select is a helper method to define mock.On call
 //   - ctx context.Context
-//   - dest interface{}
+//   - dest any
 //   - query string
-//   - args ...interface{}
+//   - args ...any
 func (_e *MockConnection_Expecter) Select(ctx any, dest any, query any, args ...any) *MockConnection_Select_Call {
 	return &MockConnection_Select_Call{Call: _e.mock.On("Select",
 		append([]any{ctx, dest, query}, args...)...)}
 }
 
-func (_c *MockConnection_Select_Call) Run(run func(ctx context.Context, dest interface{}, query string, args ...interface{})) *MockConnection_Select_Call {
+func (_c *MockConnection_Select_Call) Run(run func(ctx context.Context, dest any, query string, args ...any)) *MockConnection_Select_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 interface{}
+		var arg1 any
 		if args[1] != nil {
-			arg1 = args[1].(interface{})
+			arg1 = args[1].(any)
 		}
 		var arg2 string
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
-		var arg3 []interface{}
-		variadicArgs := make([]interface{}, len(args)-3)
+		var arg3 []any
+		variadicArgs := make([]any, len(args)-3)
 		for i, a := range args[3:] {
 			if a != nil {
-				variadicArgs[i] = a.(interface{})
+				variadicArgs[i] = a.(any)
 			}
 		}
 		arg3 = variadicArgs
@@ -429,7 +429,7 @@ func (_c *MockConnection_Select_Call) Return(err error) *MockConnection_Select_C
 	return _c
 }
 
-func (_c *MockConnection_Select_Call) RunAndReturn(run func(ctx context.Context, dest interface{}, query string, args ...interface{}) error) *MockConnection_Select_Call {
+func (_c *MockConnection_Select_Call) RunAndReturn(run func(ctx context.Context, dest any, query string, args ...any) error) *MockConnection_Select_Call {
 	_c.Call.Return(run)
 	return _c
 }
