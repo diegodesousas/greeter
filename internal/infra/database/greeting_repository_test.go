@@ -21,13 +21,16 @@ type mockConnection struct {
 	selectErr error
 	getResult interface{}
 	selectResult interface{}
+	getArgs      []interface{}
+	selectArgs   []interface{}
 }
 
 func (m *mockConnection) Exec(_ context.Context, _ string, _ ...interface{}) (sql.Result, error) {
 	return nil, m.execErr
 }
 
-func (m *mockConnection) Get(_ context.Context, dest interface{}, _ string, _ ...interface{}) error {
+func (m *mockConnection) Get(_ context.Context, dest interface{}, _ string, args ...interface{}) error {
+	m.getArgs = args
 	if m.getErr != nil {
 		return m.getErr
 	}
@@ -37,7 +40,8 @@ func (m *mockConnection) Get(_ context.Context, dest interface{}, _ string, _ ..
 	return nil
 }
 
-func (m *mockConnection) Select(_ context.Context, dest interface{}, _ string, _ ...interface{}) error {
+func (m *mockConnection) Select(_ context.Context, dest interface{}, _ string, args ...interface{}) error {
+	m.selectArgs = args
 	if m.selectErr != nil {
 		return m.selectErr
 	}
@@ -221,6 +225,35 @@ func TestGreetingRepository_Search(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantTotal, total)
 			assert.Len(t, greetings, tt.wantLen)
+		})
+	}
+}
+
+func TestGreetingRepository_SearchEscapesLikeWildcards(t *testing.T) {
+	tests := []struct {
+		name        string
+		search      string
+		wantPattern string
+	}{
+		{name: "plain term is wrapped in wildcards", search: "joao", wantPattern: `%joao%`},
+		{name: "percent is matched literally", search: "100%", wantPattern: `%100\%%`},
+		{name: "underscore is matched literally", search: "a_b", wantPattern: `%a\_b%`},
+		{name: "backslash is matched literally", search: `a\b`, wantPattern: `%a\\b%`},
+		{name: "lone percent does not match everything", search: "%", wantPattern: `%\%%`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			conn := &mockConnection{getResult: 0}
+			repo := database.NewGreetingRepository(conn)
+
+			_, _, err := repo.Search(context.Background(), tt.search, 1, 10)
+
+			require.NoError(t, err)
+			require.NotEmpty(t, conn.getArgs)
+			require.NotEmpty(t, conn.selectArgs)
+			assert.Equal(t, tt.wantPattern, conn.getArgs[0])
+			assert.Equal(t, tt.wantPattern, conn.selectArgs[0])
 		})
 	}
 }
