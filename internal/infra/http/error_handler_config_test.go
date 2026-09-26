@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,6 +29,11 @@ func TestErrorHandler(t *testing.T) {
 			name:       "validator.Error maps to 422",
 			err:        validator.NewRequiredError("name"),
 			wantStatus: http.StatusUnprocessableEntity,
+		},
+		{
+			name:       "ErrBadRequest maps to 400",
+			err:        fmt.Errorf("%w: unexpected EOF", infrahttp.ErrBadRequest),
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "unknown error maps to 500",

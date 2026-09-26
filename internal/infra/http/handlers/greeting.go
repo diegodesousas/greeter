@@ -1,9 +1,6 @@
 package handlers
 
 import (
-    "encoding/json"
-    "errors"
-    "io"
     "net/http"
     "strconv"
 
@@ -34,7 +31,7 @@ type HelloRequest struct {
 func Hello(useCase greet.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
         var body HelloRequest
-        if err := json.NewDecoder(req.Body).Decode(&body); err != nil && !errors.Is(err, io.EOF) {
+        if err := infrahttp.ReadJson(req, &body); err != nil {
             return err
         }
 
