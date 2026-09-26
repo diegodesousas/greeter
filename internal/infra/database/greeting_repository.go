@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
@@ -23,6 +24,10 @@ func (m greetingModel) toDomain() greeting.Greeting {
 	}
 }
 
+// likeEscaper escapes the characters ILIKE treats as special (with the default
+// backslash escape) so a search term is matched literally.
+var likeEscaper = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
+
 type greetingRepository struct {
 	conn Connection
 }
@@ -40,7 +45,7 @@ func (r *greetingRepository) Save(ctx context.Context, g greeting.Greeting) erro
 }
 
 func (r *greetingRepository) Search(ctx context.Context, name string, page, perPage int) ([]greeting.Greeting, int, error) {
-	pattern := "%" + name + "%"
+	pattern := "%" + likeEscaper.Replace(name) + "%"
 
 	var total int
 	if err := r.conn.Get(ctx, &total,

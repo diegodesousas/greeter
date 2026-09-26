@@ -5,11 +5,24 @@ import (
 	"fmt"
 
 	"github.com/diegodesousas/go-devkit/pkg/validator"
+	"github.com/diegodesousas/greeter/internal/application/validation"
 )
 
 func nameRequired(_ context.Context, dto DTO) error {
 	if validator.IsEmpty(dto.Name) {
 		return validator.NewRequiredError("name")
+	}
+	return nil
+}
+
+func nameMaxLength(_ context.Context, dto DTO) error {
+	const maxNameLength = 50
+
+	if validation.ExceedsMaxLength(dto.Name, maxNameLength) {
+		return validator.Error{
+			Code:    "max_length",
+			Message: fmt.Sprintf("attribute name must have at most %d characters", maxNameLength),
+		}
 	}
 	return nil
 }
@@ -37,6 +50,7 @@ func perPageBetween1And100(_ context.Context, dto DTO) error {
 func newSearchGreetingsValidator() validator.Validator[DTO] {
 	return validator.New[DTO](
 		nameRequired,
+		nameMaxLength,
 		pageMin1,
 		perPageBetween1And100,
 	)
