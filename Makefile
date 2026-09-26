@@ -17,7 +17,7 @@ DOCKER_DEV_FLAGS = \
 	-v greeter-go-mod:/go/pkg/mod \
 	-v greeter-go-build-cache:/root/.cache/go-build
 
-.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test migrate-up migrate-down migrate-create build-and-run-http docs
+.PHONY: build-init build-image build-dev build-network http-up http-down db-up db-down run dev test migrate-up migrate-down migrate-create build-and-run-http docs mocks
 
 build-init: build-image build-dev build-network
 
@@ -125,3 +125,10 @@ docs:
 		${DOCKER_DEV_FLAGS} \
 		${IMAGE_PREFIX}-dev \
 		swag init -g cmd/http/main.go -o docs --parseDependency --parseInternal
+
+mocks:
+	@docker run \
+		--rm \
+		${DOCKER_DEV_FLAGS} \
+		${IMAGE_PREFIX}-dev \
+		mockery

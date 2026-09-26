@@ -65,4 +65,5 @@ Return errors from handlers — do not write the response directly on error. The
 - **External test package** — use `package foo_test`, not `package foo`.
 - **Table-driven tests** — use a slice of structs with named subtests via `t.Run()`.
 - **Assertions** — use `testify/assert` and `testify/require`.
-- **Mocks and helpers** — define them in the same test file that uses them, not in shared files.
+- **Mocks** — never hand-write mocks. They are generated with [mockery](https://vektra.github.io/mockery/) (testify template) into the root `mocks` package. To mock a new interface, add it to `.mockery.yml` and run `make mocks`; commit the generated files. Build mocks with `mocks.NewMockXxx(t)` (expectations are asserted automatically) and set them up with `EXPECT()`; use `.Maybe()` only for calls that legitimately may not happen.
+- **Helpers** — define test helpers in the same test file that uses them, not in shared files.

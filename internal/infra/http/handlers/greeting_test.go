@@ -16,31 +16,11 @@ import (
 	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
 	infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
 	"github.com/diegodesousas/greeter/internal/infra/http/handlers"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type mockGreetUseCase struct {
-	capturedDTO greet.DTO
-	result      greet.GreetingDTO
-	err         error
-}
-
-func (m *mockGreetUseCase) Run(_ context.Context, dto greet.DTO) (greet.GreetingDTO, error) {
-	m.capturedDTO = dto
-	return m.result, m.err
-}
-
-type mockListGreetingsUseCase struct {
-	capturedDTO list_greetings.DTO
-	result      list_greetings.Output
-	err         error
-}
-
-func (m *mockListGreetingsUseCase) Run(_ context.Context, dto list_greetings.DTO) (list_greetings.Output, error) {
-	m.capturedDTO = dto
-	return m.result, m.err
-}
 
 func TestHello(t *testing.T) {
 	fixedTime := time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
@@ -118,11 +98,16 @@ func TestHello(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockGreetUseCase{result: tt.useCaseResult, err: tt.useCaseErr}
+			var captured greet.DTO
+			useCase := mocks.NewMockGreetUseCase(t)
+			useCase.EXPECT().Run(mock.Anything, mock.Anything).
+				Run(func(_ context.Context, dto greet.DTO) { captured = dto }).
+				Return(tt.useCaseResult, tt.useCaseErr).
+				Maybe()
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/hello", strings.NewReader(tt.body))
 
-			err := handlers.Hello(mock)(rec, req)
+			err := handlers.Hello(useCase)(rec, req)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -133,7 +118,7 @@ func TestHello(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tt.wantName, mock.capturedDTO.Name)
+			assert.Equal(t, tt.wantName, captured.Name)
 			assert.Equal(t, http.StatusOK, rec.Code)
 
 			var body greet.GreetingDTO
@@ -200,11 +185,16 @@ func TestListGreetings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockListGreetingsUseCase{result: tt.useCaseResult, err: tt.useCaseErr}
+			var captured list_greetings.DTO
+			useCase := mocks.NewMockListGreetingsUseCase(t)
+			useCase.EXPECT().Run(mock.Anything, mock.Anything).
+				Run(func(_ context.Context, dto list_greetings.DTO) { captured = dto }).
+				Return(tt.useCaseResult, tt.useCaseErr).
+				Maybe()
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/greetings"+tt.query, nil)
 
-			err := handlers.ListGreetings(mock)(rec, req)
+			err := handlers.ListGreetings(useCase)(rec, req)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -218,25 +208,14 @@ func TestListGreetings(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, tt.wantPage, mock.capturedDTO.Page)
-			assert.Equal(t, tt.wantPerPage, mock.capturedDTO.PerPage)
+			assert.Equal(t, tt.wantPage, captured.Page)
+			assert.Equal(t, tt.wantPerPage, captured.PerPage)
 
 			var body list_greetings.Output
 			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
 			assert.Equal(t, tt.useCaseResult.Pagination.Total, body.Pagination.Total)
 		})
 	}
-}
-
-type mockSearchGreetingsUseCase struct {
-	capturedDTO search_greetings.DTO
-	result      search_greetings.Output
-	err         error
-}
-
-func (m *mockSearchGreetingsUseCase) Run(_ context.Context, dto search_greetings.DTO) (search_greetings.Output, error) {
-	m.capturedDTO = dto
-	return m.result, m.err
 }
 
 func TestSearchGreetings(t *testing.T) {
@@ -317,11 +296,16 @@ func TestSearchGreetings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockSearchGreetingsUseCase{result: tt.useCaseResult, err: tt.useCaseErr}
+			var captured search_greetings.DTO
+			useCase := mocks.NewMockSearchGreetingsUseCase(t)
+			useCase.EXPECT().Run(mock.Anything, mock.Anything).
+				Run(func(_ context.Context, dto search_greetings.DTO) { captured = dto }).
+				Return(tt.useCaseResult, tt.useCaseErr).
+				Maybe()
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/greetings/search"+tt.query, nil)
 
-			err := handlers.SearchGreetings(mock)(rec, req)
+			err := handlers.SearchGreetings(useCase)(rec, req)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -335,9 +319,9 @@ func TestSearchGreetings(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, tt.wantName, mock.capturedDTO.Name)
-			assert.Equal(t, tt.wantPage, mock.capturedDTO.Page)
-			assert.Equal(t, tt.wantPerPage, mock.capturedDTO.PerPage)
+			assert.Equal(t, tt.wantName, captured.Name)
+			assert.Equal(t, tt.wantPage, captured.Page)
+			assert.Equal(t, tt.wantPerPage, captured.PerPage)
 
 			var body search_greetings.Output
 			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))

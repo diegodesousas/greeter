@@ -1,0 +1,46 @@
+# Mocks are generated into the root `mocks` package. Regenerate with `make mocks`.
+all: false
+template: testify
+dir: mocks
+pkgname: mocks
+filename: "{{.InterfaceName | snakecase}}.go"
+structname: "Mock{{.InterfaceName}}"
+template-data:
+  unroll-variadic: true
+packages:
+  github.com/diegodesousas/greeter/internal/domain/greeting:
+    interfaces:
+      Repository:
+        config:
+          filename: greeting_repository.go
+          structname: MockGreetingRepository
+  github.com/diegodesousas/greeter/internal/infra/clock:
+    interfaces:
+      Clock:
+  github.com/diegodesousas/greeter/internal/application/greet:
+    interfaces:
+      UseCase:
+        config:
+          filename: greet_use_case.go
+          structname: MockGreetUseCase
+  github.com/diegodesousas/greeter/internal/application/list_greetings:
+    interfaces:
+      UseCase:
+        config:
+          filename: list_greetings_use_case.go
+          structname: MockListGreetingsUseCase
+  github.com/diegodesousas/greeter/internal/application/search_greetings:
+    interfaces:
+      UseCase:
+        config:
+          filename: search_greetings_use_case.go
+          structname: MockSearchGreetingsUseCase
+  github.com/diegodesousas/greeter/internal/infra/http:
+    interfaces:
+      ErrorWriter:
+  github.com/diegodesousas/go-devkit/pkg/database/sql:
+    interfaces:
+      Connection:
+  net/http:
+    interfaces:
+      ResponseWriter:
