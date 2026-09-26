@@ -3,9 +3,9 @@ package search_greetings
 import (
 	"context"
 	"fmt"
-	"unicode/utf8"
 
 	"github.com/diegodesousas/go-devkit/pkg/validator"
+	"github.com/diegodesousas/greeter/internal/application/validation"
 )
 
 func nameRequired(_ context.Context, dto DTO) error {
@@ -16,7 +16,7 @@ func nameRequired(_ context.Context, dto DTO) error {
 }
 
 func nameMaxLength(_ context.Context, dto DTO) error {
-	if utf8.RuneCountInString(dto.Name) > 50 {
+	if validation.ExceedsMaxLength(dto.Name, 50) {
 		return validator.Error{
 			Code:    "max_length",
 			Message: "attribute name must have at most 50 characters",
