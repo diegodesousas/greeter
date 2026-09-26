@@ -15,11 +15,13 @@ func nameRequired(_ context.Context, dto DTO) error {
 	return nil
 }
 
+const maxNameLength = 50
+
 func nameMaxLength(_ context.Context, dto DTO) error {
-	if validation.ExceedsMaxLength(dto.Name, 50) {
+	if validation.ExceedsMaxLength(dto.Name, maxNameLength) {
 		return validator.Error{
 			Code:    "max_length",
-			Message: "attribute name must have at most 50 characters",
+			Message: fmt.Sprintf("attribute name must have at most %d characters", maxNameLength),
 		}
 	}
 	return nil
