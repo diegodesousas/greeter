@@ -7,17 +7,27 @@ meta:
   modified: 1737488234265
   description: ""
 collection:
-  - url: http://localhost:3000/hello/thays
+  - url: http://localhost:3000/hello
     name: Hello!
     meta:
       id: req_88e6dbf1fed74d72a1a7e2012111d2ec
       created: 1778274485849
-      modified: 1779402995473
+      modified: 1790438400000
       isPrivate: false
       description: ""
       sortKey: -1778274485849
-    method: GET
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "name": "Thays"
+        }
     headers:
+      - name: Content-Type
+        value: application/json
+        description: ""
+        disabled: false
       - name: User-Agent
         value: insomnia/12.5.0
         description: ""
