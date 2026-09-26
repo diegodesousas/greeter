@@ -87,11 +87,11 @@ func bootstrapDatabase() (database.Connection, error) {
 	return conn, nil
 }
 
-func bootstrapRoutes(repos database.Repositories) httpserver.Option {
+func bootstrapRoutes(conn database.Connection, repos database.Repositories) httpserver.Option {
     appClock := clock.New()
 
     var routeList []httpserver.Route
-    routeList = append(routeList, routes.Health()...)
+    routeList = append(routeList, routes.Health(conn)...)
     routeList = append(routeList, routes.Greeting(appClock, repos.Greeting)...)
     routeList = append(routeList, routes.Docs()...)
 
@@ -126,7 +126,7 @@ func main() {
     }
 
     repos := database.NewRepositories(conn)
-    server := bootstrapServer(bootstrapRoutes(repos), logger, statsdClient)
+    server := bootstrapServer(bootstrapRoutes(conn, repos), logger, statsdClient)
 
     log.Info(ctx, "server starting...")
     shutdown := server.Run()
