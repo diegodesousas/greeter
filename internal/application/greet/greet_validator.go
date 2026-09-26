@@ -1,35 +1,37 @@
 package greet
 
 import (
-    "context"
-    "fmt"
-    "unicode/utf8"
+	"context"
+	"fmt"
+	"unicode/utf8"
 
-    "github.com/diegodesousas/go-devkit/pkg/validator"
+	"github.com/diegodesousas/go-devkit/pkg/validator"
 )
 
 func nameRequired(_ context.Context, dto DTO) error {
-    if validator.IsEmpty(dto.Name) {
-        return validator.NewRequiredError("name")
-    }
+	if validator.IsEmpty(dto.Name) {
+		return validator.NewRequiredError("name")
+	}
 
-    return nil
+	return nil
 }
 
 func nameMaxLength(_ context.Context, dto DTO) error {
-    if utf8.RuneCountInString(dto.Name) > 50 {
-        return validator.Error{
-            Code:    "max_length",
-            Message: fmt.Sprintf("attribute name must have at most 50 characters"),
-        }
-    }
+	var maxLength = 50
 
-    return nil
+	if utf8.RuneCountInString(dto.Name) > maxLength {
+		return validator.Error{
+			Code:    "max_length",
+			Message: fmt.Sprintf("attribute name must have at most %d characters", maxLength),
+		}
+	}
+
+	return nil
 }
 
 func newGreetValidator() validator.Validator[DTO] {
-    return validator.New[DTO](
-        nameRequired,
-        nameMaxLength,
-    )
+	return validator.New[DTO](
+		nameRequired,
+		nameMaxLength,
+	)
 }
