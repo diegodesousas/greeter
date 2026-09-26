@@ -6,20 +6,16 @@ import (
 
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type noopRepository struct{}
-
-func (n *noopRepository) Save(_ context.Context, _ greeting.Greeting) error { return nil }
-
-func (n *noopRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
-}
-
-func (n *noopRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
+func newListRepository(t *testing.T) *mocks.MockGreetingRepository {
+	repo := mocks.NewMockGreetingRepository(t)
+	repo.EXPECT().List(mock.Anything, mock.Anything, mock.Anything).Return([]greeting.Greeting{}, 0, nil).Maybe()
+	return repo
 }
 
 func TestValidator_Page(t *testing.T) {
@@ -37,7 +33,7 @@ func TestValidator_Page(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := list_greetings.NewUseCase(&noopRepository{})
+			useCase := list_greetings.NewUseCase(newListRepository(t))
 			_, err := useCase.Run(context.Background(), list_greetings.DTO{Page: tt.page, PerPage: 10})
 
 			if tt.wantErr {
@@ -67,7 +63,7 @@ func TestValidator_PerPage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := list_greetings.NewUseCase(&noopRepository{})
+			useCase := list_greetings.NewUseCase(newListRepository(t))
 			_, err := useCase.Run(context.Background(), list_greetings.DTO{Page: 1, PerPage: tt.perPage})
 
 			if tt.wantErr {

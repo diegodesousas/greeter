@@ -8,33 +8,19 @@ import (
 
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 var fixedTime = time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
 
-type mockRepository struct {
-	greetings []greeting.Greeting
-	total     int
-	err       error
-}
-
-func (m *mockRepository) Save(_ context.Context, _ greeting.Greeting) error { return m.err }
-
-func (m *mockRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
-	return m.greetings, m.total, m.err
-}
-
-func (m *mockRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
-	return m.greetings, m.total, m.err
-}
-
 func TestRun(t *testing.T) {
 	tests := []struct {
 		name       string
 		dto        list_greetings.DTO
-		repo       *mockRepository
+		setupRepo  func(repo *mocks.MockGreetingRepository)
 		wantTotal  int
 		wantLen    int
 		wantErr    bool
@@ -43,12 +29,11 @@ func TestRun(t *testing.T) {
 		{
 			name: "success with results",
 			dto:  list_greetings.DTO{Page: 1, PerPage: 10},
-			repo: &mockRepository{
-				greetings: []greeting.Greeting{
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().List(mock.Anything, 1, 10).Return([]greeting.Greeting{
 					{ID: "abc-123", Name: "Diego", Message: "Hello, Diego!", GreetedAt: fixedTime},
 					{ID: "def-456", Name: "Ana", Message: "Hello, Ana!", GreetedAt: fixedTime},
-				},
-				total: 2,
+				}, 2, nil)
 			},
 			wantTotal: 2,
 			wantLen:   2,
@@ -56,42 +41,48 @@ func TestRun(t *testing.T) {
 		{
 			name:      "success with empty results",
 			dto:       list_greetings.DTO{Page: 1, PerPage: 10},
-			repo:      &mockRepository{greetings: []greeting.Greeting{}, total: 0},
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().List(mock.Anything, 1, 10).Return([]greeting.Greeting{}, 0, nil)
+			},
 			wantTotal: 0,
 			wantLen:   0,
 		},
 		{
 			name:        "page less than one",
 			dto:         list_greetings.DTO{Page: 0, PerPage: 10},
-			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "page",
 		},
 		{
 			name:        "per_page zero",
 			dto:         list_greetings.DTO{Page: 1, PerPage: 0},
-			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "per_page",
 		},
 		{
 			name:        "per_page exceeds max",
 			dto:         list_greetings.DTO{Page: 1, PerPage: 101},
-			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "per_page",
 		},
 		{
 			name:    "repository error",
 			dto:     list_greetings.DTO{Page: 1, PerPage: 10},
-			repo:    &mockRepository{err: errors.New("db connection failed")},
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().List(mock.Anything, 1, 10).Return(nil, 0, errors.New("db connection failed"))
+			},
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := list_greetings.NewUseCase(tt.repo)
+			repo := mocks.NewMockGreetingRepository(t)
+			if tt.setupRepo != nil {
+				tt.setupRepo(repo)
+			}
+
+			useCase := list_greetings.NewUseCase(repo)
 
 			result, err := useCase.Run(context.Background(), tt.dto)
 

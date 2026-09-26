@@ -9,25 +9,11 @@ import (
 
 	"github.com/diegodesousas/greeter/internal/application/greet"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type fixedClock struct{ t time.Time }
-
-func (f fixedClock) Now() time.Time { return f.t }
-
-type mockRepository struct{ err error }
-
-func (m *mockRepository) Save(_ context.Context, _ greeting.Greeting) error { return m.err }
-
-func (m *mockRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
-	return nil, 0, m.err
-}
-
-func (m *mockRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
-	return nil, 0, m.err
-}
 
 var fixedTime = time.Date(2026, 5, 8, 12, 0, 0, 0, time.UTC)
 
@@ -35,48 +21,60 @@ func TestRun(t *testing.T) {
 	tests := []struct {
 		name        string
 		dto         greet.DTO
-		repo        *mockRepository
+		setupRepo   func(repo *mocks.MockGreetingRepository)
 		wantMessage string
 		wantErr     bool
 		errContains string
 	}{
 		{
-			name:        "success",
-			dto:         greet.DTO{Name: "Diego"},
-			repo:        &mockRepository{},
+			name: "success",
+			dto:  greet.DTO{Name: "Diego"},
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().Save(mock.Anything, greeting.New("Diego", fixedTime)).Return(nil)
+			},
 			wantMessage: "Hello, Diego!",
 		},
 		{
-			name:        "name at max length",
-			dto:         greet.DTO{Name: strings.Repeat("a", 50)},
-			repo:        &mockRepository{},
+			name: "name at max length",
+			dto:  greet.DTO{Name: strings.Repeat("a", 50)},
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().Save(mock.Anything, greeting.New(strings.Repeat("a", 50), fixedTime)).Return(nil)
+			},
 			wantMessage: "Hello, " + strings.Repeat("a", 50) + "!",
 		},
 		{
 			name:        "name empty",
 			dto:         greet.DTO{Name: ""},
-			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "name",
 		},
 		{
 			name:        "name exceeds max length",
 			dto:         greet.DTO{Name: strings.Repeat("a", 51)},
-			repo:        &mockRepository{},
 			wantErr:     true,
 			errContains: "name",
 		},
 		{
-			name:    "repository error",
-			dto:     greet.DTO{Name: "Diego"},
-			repo:    &mockRepository{err: errors.New("db connection failed")},
+			name: "repository error",
+			dto:  greet.DTO{Name: "Diego"},
+			setupRepo: func(repo *mocks.MockGreetingRepository) {
+				repo.EXPECT().Save(mock.Anything, mock.Anything).Return(errors.New("db connection failed"))
+			},
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := greet.NewUseCase(fixedClock{t: fixedTime}, tt.repo)
+			clock := mocks.NewMockClock(t)
+			clock.EXPECT().Now().Return(fixedTime).Maybe()
+
+			repo := mocks.NewMockGreetingRepository(t)
+			if tt.setupRepo != nil {
+				tt.setupRepo(repo)
+			}
+
+			useCase := greet.NewUseCase(clock, repo)
 
 			result, err := useCase.Run(context.Background(), tt.dto)
 

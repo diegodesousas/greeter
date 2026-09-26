@@ -7,21 +7,11 @@ import (
 
 	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
 	"github.com/diegodesousas/greeter/internal/domain/greeting"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type noopRepository struct{}
-
-func (n *noopRepository) Save(_ context.Context, _ greeting.Greeting) error { return nil }
-
-func (n *noopRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
-}
-
-func (n *noopRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
-}
 
 func TestValidator_Name(t *testing.T) {
 	tests := []struct {
@@ -40,7 +30,10 @@ func TestValidator_Name(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := search_greetings.NewUseCase(&noopRepository{})
+			repo := mocks.NewMockGreetingRepository(t)
+			repo.EXPECT().Search(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]greeting.Greeting{}, 0, nil).Maybe()
+
+			useCase := search_greetings.NewUseCase(repo)
 			_, err := useCase.Run(context.Background(), search_greetings.DTO{Name: tt.input, Page: 1, PerPage: 10})
 
 			if tt.wantErr {
