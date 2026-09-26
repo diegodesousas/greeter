@@ -3,6 +3,7 @@ package handlers
 import (
     "encoding/json"
     "errors"
+    "fmt"
     "io"
     "net/http"
     "strconv"
@@ -35,7 +36,7 @@ func Hello(useCase greet.UseCase) httpserver.Handler {
     return func(w http.ResponseWriter, req *http.Request) error {
         var body HelloRequest
         if err := json.NewDecoder(req.Body).Decode(&body); err != nil && !errors.Is(err, io.EOF) {
-            return err
+            return fmt.Errorf("%w: %s", infrahttp.ErrBadRequest, err)
         }
 
         dto := greet.DTO{

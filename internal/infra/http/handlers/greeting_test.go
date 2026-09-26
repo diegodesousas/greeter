@@ -13,6 +13,7 @@ import (
 	"github.com/diegodesousas/greeter/internal/application/greet"
 	list_greetings "github.com/diegodesousas/greeter/internal/application/list_greetings"
 	search_greetings "github.com/diegodesousas/greeter/internal/application/search_greetings"
+	infrahttp "github.com/diegodesousas/greeter/internal/infra/http"
 	"github.com/diegodesousas/greeter/internal/infra/http/handlers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,6 +50,7 @@ func TestHello(t *testing.T) {
 		useCaseResult greet.GreetingDTO
 		useCaseErr    error
 		wantErr       bool
+		wantErrIs     error
 		wantName      string
 		wantMessage   string
 	}{
@@ -80,9 +82,16 @@ func TestHello(t *testing.T) {
 			wantMessage: "Hello, !",
 		},
 		{
-			name:    "malformed json body returns error",
-			body:    `{"name":`,
-			wantErr: true,
+			name:      "malformed json body returns bad request error",
+			body:      `{"name":`,
+			wantErr:   true,
+			wantErrIs: infrahttp.ErrBadRequest,
+		},
+		{
+			name:      "invalid json type returns bad request error",
+			body:      `{"name":123}`,
+			wantErr:   true,
+			wantErrIs: infrahttp.ErrBadRequest,
 		},
 	}
 
@@ -96,6 +105,9 @@ func TestHello(t *testing.T) {
 
 			if tt.wantErr {
 				require.Error(t, err)
+				if tt.wantErrIs != nil {
+					assert.ErrorIs(t, err, tt.wantErrIs)
+				}
 				return
 			}
 
