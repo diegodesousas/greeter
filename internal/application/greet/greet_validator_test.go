@@ -7,26 +7,11 @@ import (
 	"time"
 
 	"github.com/diegodesousas/greeter/internal/application/greet"
-	"github.com/diegodesousas/greeter/internal/domain/greeting"
+	"github.com/diegodesousas/greeter/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type noopClock struct{}
-
-func (noopClock) Now() time.Time { return time.Time{} }
-
-type noopRepository struct{}
-
-func (n *noopRepository) Save(_ context.Context, _ greeting.Greeting) error { return nil }
-
-func (n *noopRepository) List(_ context.Context, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
-}
-
-func (n *noopRepository) Search(_ context.Context, _ string, _, _ int) ([]greeting.Greeting, int, error) {
-	return []greeting.Greeting{}, 0, nil
-}
 
 func TestValidator_Name(t *testing.T) {
 	tests := []struct {
@@ -47,7 +32,12 @@ func TestValidator_Name(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			useCase := greet.NewUseCase(noopClock{}, &noopRepository{})
+			clock := mocks.NewMockClock(t)
+			clock.EXPECT().Now().Return(time.Time{}).Maybe()
+			repo := mocks.NewMockGreetingRepository(t)
+			repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil).Maybe()
+
+			useCase := greet.NewUseCase(clock, repo)
 			_, err := useCase.Run(context.Background(), greet.DTO{Name: tt.input})
 
 			if tt.wantErr {

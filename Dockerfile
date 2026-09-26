@@ -1,6 +1,7 @@
 FROM golang:1.26-alpine AS base
 RUN apk update && apk add --no-cache git pkgconf gcc libc-dev
 RUN go install github.com/swaggo/swag/cmd/swag@v1.16.4
+RUN go install github.com/vektra/mockery/v3@v3.8.0
 WORKDIR /application
 COPY go.mod go.sum ./
 RUN go mod download

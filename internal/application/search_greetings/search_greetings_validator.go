@@ -48,7 +48,7 @@ func perPageBetween1And100(_ context.Context, dto DTO) error {
 }
 
 func newSearchGreetingsValidator() validator.Validator[DTO] {
-	return validator.New[DTO](
+	return validator.New(
 		nameRequired,
 		nameMaxLength,
 		pageMin1,
