@@ -36,6 +36,11 @@ func TestErrorHandler(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 		},
 		{
+			name:       "ErrServiceUnavailable maps to 503",
+			err:        fmt.Errorf("%w: database: connection refused", infrahttp.ErrServiceUnavailable),
+			wantStatus: http.StatusServiceUnavailable,
+		},
+		{
 			name:       "unknown error maps to 500",
 			err:        errors.New("unexpected error"),
 			wantStatus: http.StatusInternalServerError,

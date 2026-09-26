@@ -38,6 +38,9 @@ packages:
   github.com/diegodesousas/greeter/internal/infra/http:
     interfaces:
       ErrorWriter:
+  github.com/diegodesousas/greeter/internal/infra/http/handlers:
+    interfaces:
+      Pinger:
   github.com/diegodesousas/go-devkit/pkg/database/sql:
     interfaces:
       Connection:

@@ -192,7 +192,7 @@ const docTemplate = `{
         },
         "/readiness": {
             "get": {
-                "description": "Indica que o serviço está pronto para receber tráfego",
+                "description": "Indica que o serviço está pronto para receber tráfego (banco de dados acessível)",
                 "produces": [
                     "application/json"
                 ],
@@ -205,6 +205,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_infra_http_handlers.HealthyResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Banco de dados indisponível",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_diegodesousas_greeter_internal_infra_http.DefaultResponse"
                         }
                     }
                 }

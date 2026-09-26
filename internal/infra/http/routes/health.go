@@ -5,9 +5,9 @@ import (
     "github.com/diegodesousas/greeter/internal/infra/http/handlers"
 )
 
-func Health() []httpserver.Route {
+func Health(db handlers.Pinger) []httpserver.Route {
     return []httpserver.Route{
         httpserver.NewGet("/liveness", handlers.HealthLiveness()),
-        httpserver.NewGet("/readiness", handlers.HealthReadiness()),
+        httpserver.NewGet("/readiness", handlers.HealthReadiness(db)),
     }
 }
