@@ -12,6 +12,7 @@ import (
     "github.com/diegodesousas/go-devkit/pkg/httpserver"
     "github.com/diegodesousas/go-devkit/pkg/log"
     "github.com/diegodesousas/go-devkit/pkg/metrics"
+    "github.com/diegodesousas/go-devkit/pkg/shutdown"
     _ "github.com/diegodesousas/greeter/docs"
     "github.com/diegodesousas/greeter/internal/infra/clock"
     "github.com/diegodesousas/greeter/internal/infra/database"
@@ -19,6 +20,11 @@ import (
     "github.com/diegodesousas/greeter/internal/infra/http/routes"
     "github.com/spf13/viper"
 )
+
+// shutdownTimeout bounds graceful shutdown; keep it below the orchestrator's
+// grace period (30s by default on Kubernetes) so resources are released before
+// the process is killed.
+const shutdownTimeout = 15 * time.Second
 
 func bootstrapConfig() error {
     os.Setenv("TZ", "UTC")
@@ -129,7 +135,7 @@ func main() {
     server := bootstrapServer(bootstrapRoutes(conn, repos), logger, statsdClient)
 
     log.Info(ctx, "server starting...")
-    shutdown := server.Run()
+    stopServer := server.Run()
 
     interrupt := make(chan os.Signal, 1)
     signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -143,8 +149,13 @@ func main() {
     log.Info(ctx, "server running")
     <-interrupt
 
-    if err := shutdown(ctx); err != nil {
-        log.Fatal(ctx, err.Error())
+    err = shutdown.Graceful(ctx, shutdownTimeout,
+        shutdown.Step(stopServer),
+        func(context.Context) error { return conn.Close() },
+    )
+    if err != nil {
+        log.Error(ctx, err)
+        os.Exit(1)
     }
 
     log.Info(ctx, "server shutdown completed")
