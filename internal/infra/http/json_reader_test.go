@@ -12,7 +12,8 @@ import (
 )
 
 type readJsonPayload struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Secret string `json:"secret" trim:"-"`
 }
 
 func TestReadJson(t *testing.T) {
@@ -26,6 +27,21 @@ func TestReadJson(t *testing.T) {
 			name: "decodes valid json body",
 			body: `{"name":"Diego"}`,
 			want: readJsonPayload{Name: "Diego"},
+		},
+		{
+			name: "trims surrounding whitespace from string fields",
+			body: `{"name":"  Diego \t\n"}`,
+			want: readJsonPayload{Name: "Diego"},
+		},
+		{
+			name: "whitespace-only string becomes empty",
+			body: `{"name":"   "}`,
+			want: readJsonPayload{Name: ""},
+		},
+		{
+			name: "fields tagged trim:\"-\" keep whitespace",
+			body: `{"secret":"  s3cr3t  "}`,
+			want: readJsonPayload{Secret: "  s3cr3t  "},
 		},
 		{
 			name: "empty body leaves destination untouched",
