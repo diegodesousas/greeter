@@ -55,7 +55,7 @@ func bootstrapLogger() log.Logger {
 
     return log.New(
         log.WithLevel(level),
-        log.WithJsonFormat(),
+        log.WithJSONFormat(),
     )
 }
 
@@ -69,7 +69,7 @@ func bootstrapServer(routeOpt httpserver.Option, logger log.Logger, metricsClien
             metrics.Metrics(metricsClient),
             httpserver.RequestID,
             httpserver.TraceID(gen.UUIDGenerator()),
-            httpserver.ContentTypeJson(),
+            httpserver.ContentTypeJSON(),
             httpserver.Compress(),
             httpserver.AllowAll(),
         ),

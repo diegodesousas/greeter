@@ -1,9 +1,9 @@
 module github.com/diegodesousas/greeter
 
-go 1.24.0
+go 1.27.0
 
 require (
-	github.com/diegodesousas/go-devkit v0.0.1
+	github.com/diegodesousas/go-devkit v0.3.0
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.20.1
